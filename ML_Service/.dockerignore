@@ -1,0 +1,66 @@
+# =============================================================================
+# AIVerifySnap ML Service - Docker Ignore
+# =============================================================================
+# Files and directories to exclude from Docker build context
+
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+!README.md
+docs/
+Document*.docx
+
+# IDE and editor files
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+.env
+
+# Test files
+tests/
+test_*.py
+
+# Development files
+requirements-dev.txt
+.pre-commit-config.yaml
+setup.py
+setup.cfg
+pyproject.toml
+
+# Model weights (mount as volume instead)
+models/*.pth
+models/*.pt
+!models/README.md
+
+# Logs and temp files
+logs/
+*.log
+tmp/
+temp/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files (avoid recursive include)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+

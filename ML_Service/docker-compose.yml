@@ -1,0 +1,96 @@
+# =============================================================================
+# AIVerifySnap - Docker Compose Configuration
+# =============================================================================
+# This file defines the ML service and its integration with the Spring Boot backend
+
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # ML Service (FastAPI + PyTorch)
+  # ---------------------------------------------------------------------------
+  ml-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: aiverifysnap-ml
+    ports:
+      - "8000:8000"
+    environment:
+      # Model configuration
+      - MODEL_BACKEND=aiverifynet
+      - MODEL_PATH=/app/models/aiverifynet.pth
+      - ALLOW_UNTRAINED=1
+      - DEVICE=auto
+
+      # Image processing
+      - MAX_IMAGE_SIDE=1024
+      - INPUT_SIZE=224
+      - ELA_QUALITY=90
+
+      # CORS for Spring Boot backend
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:8080,http://localhost:8081
+
+      # Detection threshold
+      - CONFIDENCE_THRESHOLD=0.5
+    volumes:
+      # Mount models directory for trained weights
+      - ./models:/app/models:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8000/health').raise_for_status()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+
+  # ---------------------------------------------------------------------------
+  # ML Service with GPU Support (NVIDIA)
+  # ---------------------------------------------------------------------------
+  ml-service-gpu:
+    build:
+      context: .
+      dockerfile: Dockerfile.gpu
+      target: production
+    container_name: aiverifysnap-ml-gpu
+    ports:
+      - "8001:8000"
+    environment:
+      - MODEL_BACKEND=aiverifynet
+      - MODEL_PATH=/app/models/aiverifynet.pth
+      - ALLOW_UNTRAINED=1
+      - DEVICE=cuda
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:8080
+    volumes:
+      - ./models:/app/models:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    profiles:
+      - gpu  # Only start with: docker-compose --profile gpu up
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  default:
+    name: aiverifysnap-network
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  models:
+    driver: local
+
