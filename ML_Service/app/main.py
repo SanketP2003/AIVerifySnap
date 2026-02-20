@@ -23,17 +23,39 @@ from typing import Any, AsyncIterator, Dict, List, Optional
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
+from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse, RedirectResponse
 
 from app.config import settings
 from app.model import DetectionModel
 from app.preprocess import load_image_from_bytes, resize_max_side
 from app.schemas import (
+    Base64ImageRequest,
     ErrorResponse,
     HealthResponse,
     ModelInfoResponse,
     PredictResponse,
 )
+
+
+# =============================================================================
+# OpenAPI Tags for Swagger UI Organization
+# =============================================================================
+tags_metadata = [
+    {
+        "name": "Detection",
+        "description": "Deepfake detection endpoints. Upload images or submit base64-encoded data for AI-powered analysis using the dual-stream AIVerifyNet model.",
+        "externalDocs": {
+            "description": "Learn more about deepfake detection",
+            "url": "https://github.com/SanketP2003/AIVerifySnap",
+        },
+    },
+    {
+        "name": "Health",
+        "description": "Service health monitoring endpoints. Check service status and model information.",
+    },
+]
 
 # Initialize detection model with dependency injection pattern
 # Model is loaded once at startup, not on every request
@@ -69,17 +91,76 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     print("👋 Shutting down AIVerifySnap ML Service...")
 
 
-# Create FastAPI application with metadata
+# Create FastAPI application with enhanced metadata for Swagger UI
 app = FastAPI(
     title="AIVerifySnap ML Service",
-    description=(
-        "AI-powered deepfake detection service using a dual-stream hybrid network. "
-        "Combines spatial (RGB) and frequency (ELA) analysis for robust detection."
-    ),
+    description="""
+## AI-Powered Deepfake Detection API
+
+AIVerifySnap uses a **Dual-Stream Hybrid Neural Network** (AIVerifyNet) for robust deepfake detection.
+
+### Architecture Overview
+
+The system combines two analysis streams:
+
+1. **Spatial Stream (RGB)**: Analyzes raw images using pre-trained **ResNet-50**
+   - Captures semantic features: face structure, lighting, shadows
+   - Benefits from ImageNet pre-training
+
+2. **Frequency Stream (ELA)**: Analyzes Error Level Analysis maps using **ResNet-18**
+   - Detects high-frequency compression artifacts
+   - Catches manipulation traces invisible to the human eye
+
+3. **Fusion Layer**: Combines features from both streams for final classification
+
+### How It Works
+
+```
+RGB Image → ResNet-50 → 2048 features ┐
+                                       ├→ Fusion → Real/Fake
+ELA Image → ResNet-18 →  512 features ┘
+```
+
+### Integration
+
+This service is designed to work with the **Spring Boot backend**. Configure the backend with:
+
+```yaml
+ml:
+  service:
+    url: http://localhost:8000
+```
+
+### Quick Start
+
+Try the `/predict` endpoint below to analyze an image for deepfakes!
+    """,
     version="1.0.0",
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
+    openapi_url="/openapi.json",
+    openapi_tags=tags_metadata,
+    contact={
+        "name": "AIVerifySnap Team",
+        "url": "https://github.com/SanketP2003/AIVerifySnap",
+        "email": "support@aiverifysnap.com",
+    },
+    license_info={
+        "name": "MIT License",
+        "url": "https://opensource.org/licenses/MIT",
+    },
+    swagger_ui_parameters={
+        "deepLinking": True,
+        "displayRequestDuration": True,
+        "docExpansion": "list",
+        "operationsSorter": "method",
+        "filter": True,
+        "showExtensions": True,
+        "showCommonExtensions": True,
+        "syntaxHighlight.theme": "monokai",
+        "tryItOutEnabled": True,
+    },
 )
 
 # Configure CORS for Spring Boot backend communication
@@ -229,30 +310,26 @@ def predict(file: UploadFile = File(...)) -> PredictResponse:
     summary="Detect deepfake in base64-encoded image",
     description=(
         "Submit a base64-encoded image for deepfake detection. "
-        "Useful for direct API integration without file upload."
+        "Useful for direct API integration without file upload. "
+        "Supports both raw base64 strings and data URL format (e.g., `data:image/jpeg;base64,...`)."
     ),
 )
-def predict_base64(payload: Dict[str, str]) -> PredictResponse:
+def predict_base64(payload: Base64ImageRequest) -> PredictResponse:
     """
     Analyze a base64-encoded image for deepfake detection.
 
-    Args:
-        payload: Dictionary with 'image_base64' key containing the encoded image
+    Accepts:
+    - Raw base64 string: `/9j/4AAQSkZJRgABAQAAAQABAAD...`
+    - Data URL format: `data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...`
 
     Returns:
         PredictResponse with detection results
     """
     start = time.time()
 
-    if "image_base64" not in payload:
-        raise HTTPException(
-            status_code=400,
-            detail="Missing required field: 'image_base64'"
-        )
-
     try:
         # Handle data URL format (e.g., "data:image/jpeg;base64,...")
-        base64_string = payload["image_base64"]
+        base64_string = payload.image_base64
         if "," in base64_string:
             base64_string = base64_string.split(",", 1)[1]
 
