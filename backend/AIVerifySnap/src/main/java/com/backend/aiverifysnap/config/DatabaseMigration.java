@@ -29,5 +29,27 @@ public class DatabaseMigration {
             // Column may already be TEXT or table may not exist yet
             log.debug("Column migration skipped: {}", e.getMessage());
         }
+
+        // Ensure the sequence exists for scan_id generation
+        try {
+            jdbcTemplate.execute(
+                "CREATE SEQUENCE IF NOT EXISTS detection_history_scan_id_seq " +
+                "START WITH 1 INCREMENT BY 1"
+            );
+            log.info("Ensured detection_history_scan_id_seq sequence exists");
+        } catch (Exception e) {
+            log.debug("Sequence creation skipped: {}", e.getMessage());
+        }
+
+        // Sync the sequence with the current max scan_id to avoid conflicts
+        try {
+            jdbcTemplate.execute(
+                "SELECT setval('detection_history_scan_id_seq', " +
+                "COALESCE((SELECT MAX(scan_id) FROM detection_history), 0) + 1, false)"
+            );
+            log.info("Synced detection_history_scan_id_seq with current max scan_id");
+        } catch (Exception e) {
+            log.debug("Sequence sync skipped: {}", e.getMessage());
+        }
     }
 }

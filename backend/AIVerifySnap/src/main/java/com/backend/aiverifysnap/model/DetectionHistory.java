@@ -15,7 +15,8 @@ import java.time.LocalDateTime;
 public class DetectionHistory {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "detection_history_seq")
+    @SequenceGenerator(name = "detection_history_seq", sequenceName = "detection_history_scan_id_seq", allocationSize = 1)
     @Column(name = "scan_id")
     private Long scanId;
 
@@ -28,7 +29,7 @@ public class DetectionHistory {
     @Column(name = "confidence_Score")
     private Double confidenceScore;
 
-    @Lob
+        @Lob
     @Column(name = "analysis_metadata", columnDefinition = "TEXT")
     private String analysisMetadata;
 
