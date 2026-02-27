@@ -55,20 +55,32 @@ public class DetectionService {
         MultipartBodyBuilder bodyBuilder = new MultipartBodyBuilder();
         bodyBuilder.part("file", file.getResource());
 
+        long startTime = System.currentTimeMillis();
+
         try {
             // Prepare to call /detect (retry with trailing slash if not found)
             String primaryPath = "/detect";
             log.debug("Calling ML service at {}{}", mlServiceUrl, primaryPath);
             Map<String, Object> response = callPredictEndpoint(primaryPath, bodyBuilder);
-            if (response != null)
-                return response;
+            if (response == null) {
+                // If we get here, try a trailing-slash variant as a fallback
+                String altPath = "/detect/";
+                log.debug("Retrying ML service at {}{}", mlServiceUrl, altPath);
+                response = callPredictEndpoint(altPath, bodyBuilder);
+            }
 
-            // If we get here, try a trailing-slash variant as a fallback
-            String altPath = "/detect/";
-            log.debug("Retrying ML service at {}{}", mlServiceUrl, altPath);
-            response = callPredictEndpoint(altPath, bodyBuilder);
+            if (response == null) {
+                return Map.of("error", "Empty response from ML service");
+            }
 
-            return response != null ? response : Map.of("error", "Empty response from ML service");
+            long elapsed = System.currentTimeMillis() - startTime;
+
+            // Transform the ML service response to match the frontend's DetectionResult
+            // interface.
+            // ML service returns: { verdict, confidence, filename, raw_output }
+            // Frontend expects: { prediction, confidence, filename, is_deepfake, raw_score,
+            // processing_time_ms, elapsed_ms, model_status, details }
+            return transformMlResponse(response, elapsed);
         } catch (WebClientResponseException wcre) {
             // Log the status and response body for debugging
             String body = null;
@@ -94,6 +106,81 @@ public class DetectionService {
             err.put("error", "Failed to call ML service: " + e.getMessage());
             return err;
         }
+    }
+
+    /**
+     * Transforms the raw ML service JSON into the shape the frontend expects.
+     * ML response : { "verdict", "confidence", "filename", "raw_output", "ela":
+     * {...}, "processing_time_ms" }
+     * Frontend needs: { "prediction", "confidence", "is_deepfake", "raw_score",
+     * "filename",
+     * "processing_time_ms", "elapsed_ms", "model_status", "details" }
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> transformMlResponse(Map<String, Object> mlResponse, long elapsedMs) {
+        Map<String, Object> result = new HashMap<>();
+
+        // Map "verdict" -> "prediction" (the field the frontend reads)
+        String verdict = mlResponse.getOrDefault("verdict", "Unknown").toString();
+        result.put("prediction", verdict);
+        result.put("filename", mlResponse.getOrDefault("filename", "unknown"));
+
+        // Confidence: ML service returns 0-100 scale already
+        Object rawConfidence = mlResponse.get("confidence");
+        double confidence = 0.0;
+        if (rawConfidence instanceof Number) {
+            confidence = ((Number) rawConfidence).doubleValue();
+        }
+        result.put("confidence", confidence);
+
+        // Derive is_deepfake boolean from the verdict
+        boolean isDeepfake = verdict.equalsIgnoreCase("Fake");
+        result.put("is_deepfake", isDeepfake);
+
+        // raw_score: use the top score from raw_output if available
+        double rawScore = confidence / 100.0;
+        Object rawOutput = mlResponse.get("raw_output");
+        if (rawOutput instanceof List) {
+            List<Map<String, Object>> scores = (List<Map<String, Object>>) rawOutput;
+            if (!scores.isEmpty()) {
+                Object score = scores.get(0).get("score");
+                if (score instanceof Number) {
+                    rawScore = ((Number) score).doubleValue();
+                }
+            }
+        }
+        result.put("raw_score", rawScore);
+
+        // Timing — prefer ML service's own measurement, fall back to our elapsed
+        Object mlTime = mlResponse.get("processing_time_ms");
+        long processingMs = mlTime instanceof Number ? ((Number) mlTime).longValue() : elapsedMs;
+        result.put("processing_time_ms", processingMs);
+        result.put("elapsed_ms", elapsedMs);
+
+        // Model info
+        result.put("model_status", "SigLIP Deepfake Detector v1");
+
+        // Extra details envelope — include real ELA data from the ML service
+        Map<String, Object> details = new HashMap<>();
+        details.put("raw_output", rawOutput);
+
+        // Pass through ELA analysis data (mean, std, max, base64 image)
+        Object elaData = mlResponse.get("ela");
+        if (elaData instanceof Map) {
+            Map<String, Object> ela = (Map<String, Object>) elaData;
+            details.put("ela_mean", ela.get("mean"));
+            details.put("ela_std", ela.get("std"));
+            details.put("ela_max", ela.get("max"));
+            details.put("ela_image_base64", ela.get("image_base64"));
+        }
+
+        result.put("details", details);
+
+        // Also keep the original verdict key so saveDetection / DB storage still works
+        result.put("verdict", verdict);
+        result.put("label", verdict);
+
+        return result;
     }
 
     // Helper that invokes the configured ML service path and returns the parsed Map

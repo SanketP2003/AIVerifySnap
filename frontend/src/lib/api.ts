@@ -15,7 +15,14 @@ export interface DetectionResult {
     processing_time_ms: number;
     elapsed_ms: number;
     model_status: string;
-    details: Record<string, unknown>;
+    details: {
+        raw_output?: Array<{ label: string; score: number }>;
+        ela_mean?: number;
+        ela_std?: number;
+        ela_max?: number;
+        ela_image_base64?: string;
+        [key: string]: unknown;
+    };
 }
 
 export const detectionApi = {

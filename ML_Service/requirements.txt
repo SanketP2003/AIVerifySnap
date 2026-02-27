@@ -1,6 +1,8 @@
 fastapi
 uvicorn
 python-multipart
-torch>=2.9.0
+torch>=2.1.0
 torchvision
 Pillow
+transformers
+numpy

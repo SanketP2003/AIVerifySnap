@@ -47,6 +47,11 @@ export default function DetectPage() {
         };
     }, [imageUrl]);
 
+    // Build the real ELA image URL from base64 data
+    const elaImageUrl = detectionResult?.details?.ela_image_base64
+        ? `data:image/png;base64,${detectionResult.details.ela_image_base64}`
+        : null;
+
     return (
         <div className="min-h-[calc(100vh-4rem)] p-4 md:p-8 max-w-7xl mx-auto space-y-8">
             {!file && !analyzing && !resultReady && (
@@ -62,7 +67,7 @@ export default function DetectPage() {
                         </p>
 
                         <p className="text-xs text-muted-foreground">
-                            Using custom AIVerifyNet ML model with ELA analysis
+                            Using SigLIP Deepfake Detector with real ELA analysis
                         </p>
 
                         <div className="bg-card p-4 rounded-[2rem] shadow-sm border">
@@ -99,7 +104,7 @@ export default function DetectPage() {
                         Analyzing image using forensic AI...
                     </h2>
                     <p className="text-muted-foreground">
-                        Extracting features and generating ELA map
+                        Running SigLIP classifier and ELA analysis
                     </p>
                 </motion.div>
             )}
@@ -132,7 +137,16 @@ export default function DetectPage() {
                                 )}
                                 {viewMode === "ELA" && (
                                     <div className="absolute inset-0 bg-black flex items-center justify-center">
-                                        <Image src={imageUrl} alt="ELA Map" className="object-contain opacity-80 mix-blend-luminosity filter invert-[0.8] contrast-150" fill />
+                                        {elaImageUrl ? (
+                                            /* eslint-disable-next-line @next/next/no-img-element */
+                                            <img
+                                                src={elaImageUrl}
+                                                alt="Error Level Analysis"
+                                                className="object-contain w-full h-full"
+                                            />
+                                        ) : (
+                                            <p className="text-muted-foreground text-sm">ELA data not available</p>
+                                        )}
                                     </div>
                                 )}
                                 {viewMode === "Heatmap" && (
@@ -143,7 +157,11 @@ export default function DetectPage() {
                                 )}
                             </div>
                             <p className="text-sm text-muted-foreground mt-4 text-center">
-                                Scroll to zoom or drag to pan (Simulated feature)
+                                {viewMode === "ELA"
+                                    ? "Server-generated Error Level Analysis (JPEG recompression difference)"
+                                    : viewMode === "Heatmap"
+                                        ? "Attention visualization (approximate)"
+                                        : "Original uploaded image"}
                             </p>
                         </div>
                     </div>
@@ -155,18 +173,49 @@ export default function DetectPage() {
                                     result={detectionResult.prediction === "Fake" ? "AI Generated" : "Real"}
                                     confidence={detectionResult.confidence ?? 0}
                                     elaScore={detectionResult.details?.ela_mean !== undefined
-                                        ? `Mean: ${Number(detectionResult.details.ela_mean).toFixed(4)}`
+                                        ? `Mean: ${Number(detectionResult.details.ela_mean).toFixed(4)}, Std: ${Number(detectionResult.details.ela_std ?? 0).toFixed(4)}`
                                         : "N/A"}
                                     modelName={detectionResult.model_status ?? "Unknown"}
                                     timestamp={new Date().toLocaleString()}
                                 />
 
+                                {/* Raw scores breakdown */}
+                                {detectionResult.details?.raw_output && (
+                                    <div className="bg-card p-6 rounded-3xl border shadow-sm">
+                                        <h3 className="text-xl font-bold tracking-tight mb-4">Classification Scores</h3>
+                                        <div className="space-y-3">
+                                            {detectionResult.details.raw_output.map((item) => (
+                                                <div key={item.label} className="flex items-center justify-between bg-muted/30 p-3 rounded-xl border border-border/50">
+                                                    <span className="text-sm font-medium text-muted-foreground">{item.label}</span>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-32 h-2 bg-muted rounded-full overflow-hidden">
+                                                            <div
+                                                                className={`h-full rounded-full transition-all duration-1000 ${item.label === "Fake" ? "bg-red-500" : "bg-green-500"}`}
+                                                                style={{ width: `${(item.score * 100).toFixed(1)}%` }}
+                                                            />
+                                                        </div>
+                                                        <span className="text-sm font-bold text-foreground w-16 text-right">
+                                                            {(item.score * 100).toFixed(2)}%
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <p className="text-xs text-muted-foreground mt-3">
+                                            Processing time: {detectionResult.processing_time_ms}ms
+                                        </p>
+                                    </div>
+                                )}
+
                                 <div className="bg-card p-6 rounded-3xl border shadow-sm">
                                     <h3 className="text-xl font-bold tracking-tight mb-2">Explainability</h3>
                                     <p className="text-sm text-muted-foreground mb-6">
-                                        Visualizing regions that contributed most to the model&apos;s decision using Grad-CAM.
+                                        Comparing original vs. ELA analysis for forensic insight.
                                     </p>
-                                    <HeatmapViewer originalImage={imageUrl} heatmapImage={imageUrl} />
+                                    <HeatmapViewer
+                                        originalImage={imageUrl}
+                                        heatmapImage={elaImageUrl || imageUrl}
+                                    />
                                 </div>
                             </>
                         )}

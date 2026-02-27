@@ -1,62 +1,126 @@
 import io
+import base64
+import time
+import numpy as np
 import uvicorn
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from PIL import Image
-from transformers import pipeline
+from transformers import AutoImageProcessor, SiglipForImageClassification
+import torch
+
+from utils import generate_ela
 
 # Initialize the FastAPI application
 app = FastAPI(
     title="AIVerifySnap AI Service Layer",
-    description="Deepfake detection microservice using a pre-trained Vision Transformer.",
-    version="2.0.0"
+    description="Deepfake detection microservice using a pre-trained SigLIP Vision Transformer.",
+    version="3.0.0"
 )
 
-# Load the pre-trained model
-# Note: The first time you run this script, it will take a minute or two 
-# to download the model weights (~several hundred megabytes) from Hugging Face.
-print("Loading pre-trained deepfake detector...")
+# ------------------------------------------------------------------
+# Model Loading — using the OFFICIAL inference approach from the model card
+# Model: prithivMLmods/Deep-Fake-Detector-Model  (SigLIP-based)
+# Label space: Class 0 = "Fake", Class 1 = "Real"
+# ------------------------------------------------------------------
+MODEL_NAME = "prithivMLmods/Deep-Fake-Detector-Model"
+
+# Explicit label mapping from the model card
+id2label = {0: "Fake", 1: "Real"}
+
+print(f"Loading model: {MODEL_NAME} ...")
 try:
-    deepfake_detector = pipeline("image-classification", model="prithivMLmods/Deep-Fake-Detector-Model")
-    print("Model loaded successfully!")
+    processor = AutoImageProcessor.from_pretrained(MODEL_NAME)
+    model = SiglipForImageClassification.from_pretrained(MODEL_NAME)
+    model.eval()  # set to evaluation mode
+    print("Model and processor loaded successfully!")
 except Exception as e:
-    print(f"Error loading model: {e}")
+    processor = None
+    model = None
+    print(f"FATAL — Error loading model: {e}")
+
 
 @app.get("/")
 async def health_check():
     """Simple endpoint to verify the service is running."""
-    return {"status": "healthy", "service": "ai-detection-layer", "model": "pre-trained"}
+    return {
+        "status": "healthy" if model is not None else "model_not_loaded",
+        "service": "ai-detection-layer",
+        "model": MODEL_NAME,
+    }
+
 
 @app.post("/detect")
 async def detect_media(file: UploadFile = File(...)):
-    """Accepts an image upload and returns a deepfake detection verdict."""
-    if not file.content_type.startswith("image/"):
+    """Accepts an image upload and returns a deepfake detection verdict with ELA analysis."""
+
+    if model is None or processor is None:
+        raise HTTPException(status_code=503, detail="Model is not loaded. Check server logs.")
+
+    if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Uploaded file must be an image.")
-    
+
     try:
-        # 1. Read the uploaded image into memory
+        start_time = time.time()
+
+        # 1. Read the uploaded image
         image_bytes = await file.read()
         img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-        
-        # 2. Run the image through the pre-trained Hugging Face model
-        # The pipeline usually returns a list of dictionaries, e.g.:
-        # [{'label': 'Fake', 'score': 0.98}, {'label': 'Real', 'score': 0.02}]
-        results = deepfake_detector(img)
-        
-        # 3. Extract the highest confidence result
-        # Sort by score in descending order to get the top prediction
-        sorted_results = sorted(results, key=lambda x: x['score'], reverse=True)
-        top_prediction = sorted_results[0]
-        
-        # 4. Format the final response cleanly
+
+        # 2. Preprocess with the OFFICIAL AutoImageProcessor (correct resize/norm for SigLIP)
+        inputs = processor(images=img, return_tensors="pt")
+
+        # 3. Run inference
+        with torch.no_grad():
+            outputs = model(**inputs)
+            logits = outputs.logits
+            probs = torch.nn.functional.softmax(logits, dim=1).squeeze().tolist()
+
+        # 4. Build per-class scores
+        scores = []
+        for idx, prob in enumerate(probs):
+            scores.append({
+                "label": id2label[idx],
+                "score": round(prob, 6)
+            })
+
+        # Sort by score descending — top prediction first
+        scores.sort(key=lambda x: x["score"], reverse=True)
+        top = scores[0]
+
+        # 5. Generate real ELA (Error Level Analysis)
+        ela_img = generate_ela(img, quality=90)
+
+        # Compute ELA statistics
+        ela_array = np.array(ela_img, dtype=np.float32)
+        ela_mean = float(np.mean(ela_array))
+        ela_std = float(np.std(ela_array))
+        ela_max = float(np.max(ela_array))
+
+        # Encode ELA image as base64 PNG for the frontend
+        ela_buffer = io.BytesIO()
+        ela_img.save(ela_buffer, format="PNG")
+        ela_base64 = base64.b64encode(ela_buffer.getvalue()).decode("utf-8")
+
+        elapsed_ms = round((time.time() - start_time) * 1000, 1)
+
+        # 6. Build the response
         return {
             "filename": file.filename,
-            "verdict": top_prediction['label'],
-            "confidence": round(top_prediction['score'] * 100, 2),
-            "raw_output": results
+            "verdict": top["label"],
+            "confidence": round(top["score"] * 100, 2),
+            "raw_output": scores,
+            "ela": {
+                "mean": round(ela_mean, 4),
+                "std": round(ela_std, 4),
+                "max": round(ela_max, 4),
+                "image_base64": ela_base64,
+            },
+            "processing_time_ms": elapsed_ms,
         }
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
+
 
 if __name__ == "__main__":
     # Run the server locally on port 8000
