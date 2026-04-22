@@ -33,7 +33,6 @@ public class DetectionController {
         }
         Map<String, Object> result = detectionService.detectDeepfake(file);
         if (result.containsKey("error")) {
-            // ML service reported an error or the call failed
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(result);
         }
         String imagePath = file.getOriginalFilename();

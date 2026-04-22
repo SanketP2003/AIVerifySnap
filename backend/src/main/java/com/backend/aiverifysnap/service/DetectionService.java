@@ -15,6 +15,7 @@ import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
@@ -41,13 +42,19 @@ public class DetectionService {
             @Value("${ml.service.timeout:30}") int timeout,
             DetectionRepository detectionRepository,
             UserRepository userRepository) {
-        this.webClient = builder.baseUrl(url).build();
+        ExchangeStrategies largeBufferStrategies = ExchangeStrategies.builder()
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024))
+                .build();
+        this.webClient = builder
+                .baseUrl(url)
+                .exchangeStrategies(largeBufferStrategies)
+                .build();
         this.timeout = timeout;
         this.detectionRepository = detectionRepository;
         this.userRepository = userRepository;
         this.objectMapper = new ObjectMapper();
         this.mlServiceUrl = url;
-        log.info("Configured ML service URL: {}", this.mlServiceUrl);
+        log.info("Configured ML service URL: {} (codec buffer: 16 MB)", this.mlServiceUrl);
     }
 
     @SuppressWarnings("unchecked")
@@ -58,7 +65,6 @@ public class DetectionService {
         long startTime = System.currentTimeMillis();
 
         try {
-            // Prepare to call /detect (retry with trailing slash if not found)
             String primaryPath = "/detect";
             log.debug("Calling ML service at {}{}", mlServiceUrl, primaryPath);
             Map<String, Object> response = callPredictEndpoint(primaryPath, bodyBuilder);
@@ -74,23 +80,14 @@ public class DetectionService {
             }
 
             long elapsed = System.currentTimeMillis() - startTime;
-
-            // Transform the ML service response to match the frontend's DetectionResult
-            // interface.
-            // ML service returns: { verdict, confidence, filename, raw_output }
-            // Frontend expects: { prediction, confidence, filename, is_deepfake, raw_score,
-            // processing_time_ms, elapsed_ms, model_status, details }
             return transformMlResponse(response, elapsed);
         } catch (WebClientResponseException wcre) {
-            // Log the status and response body for debugging
             String body = null;
             try {
                 body = wcre.getResponseBodyAsString();
             } catch (Exception ignored) {
             }
             log.warn("ML service returned status {} for /detect. body={}", wcre.getStatusCode(), body);
-
-            // Return structured error map instead of throwing
             Map<String, Object> err = new HashMap<>();
             err.put("error", "ML service returned error status: " + wcre.getStatusCode());
             if (body != null && !body.isBlank())
@@ -108,36 +105,20 @@ public class DetectionService {
         }
     }
 
-    /**
-     * Transforms the raw ML service JSON into the shape the frontend expects.
-     * ML response : { "verdict", "confidence", "filename", "raw_output", "ela":
-     * {...}, "processing_time_ms" }
-     * Frontend needs: { "prediction", "confidence", "is_deepfake", "raw_score",
-     * "filename",
-     * "processing_time_ms", "elapsed_ms", "model_status", "details" }
-     */
     @SuppressWarnings("unchecked")
     private Map<String, Object> transformMlResponse(Map<String, Object> mlResponse, long elapsedMs) {
         Map<String, Object> result = new HashMap<>();
-
-        // Map "verdict" -> "prediction" (the field the frontend reads)
         String verdict = mlResponse.getOrDefault("verdict", "Unknown").toString();
         result.put("prediction", verdict);
         result.put("filename", mlResponse.getOrDefault("filename", "unknown"));
-
-        // Confidence: ML service returns 0-100 scale already
         Object rawConfidence = mlResponse.get("confidence");
         double confidence = 0.0;
         if (rawConfidence instanceof Number) {
             confidence = ((Number) rawConfidence).doubleValue();
         }
         result.put("confidence", confidence);
-
-        // Derive is_deepfake boolean from the verdict
         boolean isDeepfake = verdict.equalsIgnoreCase("Fake");
         result.put("is_deepfake", isDeepfake);
-
-        // raw_score: use the top score from raw_output if available
         double rawScore = confidence / 100.0;
         Object rawOutput = mlResponse.get("raw_output");
         if (rawOutput instanceof List) {
@@ -150,21 +131,13 @@ public class DetectionService {
             }
         }
         result.put("raw_score", rawScore);
-
-        // Timing — prefer ML service's own measurement, fall back to our elapsed
         Object mlTime = mlResponse.get("processing_time_ms");
         long processingMs = mlTime instanceof Number ? ((Number) mlTime).longValue() : elapsedMs;
         result.put("processing_time_ms", processingMs);
         result.put("elapsed_ms", elapsedMs);
-
-        // Model info
         result.put("model_status", "SigLIP Deepfake Detector v1");
-
-        // Extra details envelope — include real ELA data from the ML service
         Map<String, Object> details = new HashMap<>();
         details.put("raw_output", rawOutput);
-
-        // Pass through ELA analysis data (mean, std, max, base64 image)
         Object elaData = mlResponse.get("ela");
         if (elaData instanceof Map) {
             Map<String, Object> ela = (Map<String, Object>) elaData;
@@ -173,18 +146,12 @@ public class DetectionService {
             details.put("ela_max", ela.get("max"));
             details.put("ela_image_base64", ela.get("image_base64"));
         }
-
         result.put("details", details);
-
-        // Also keep the original verdict key so saveDetection / DB storage still works
         result.put("verdict", verdict);
         result.put("label", verdict);
-
         return result;
     }
 
-    // Helper that invokes the configured ML service path and returns the parsed Map
-    // response or null
     private Map<String, Object> callPredictEndpoint(String path, MultipartBodyBuilder bodyBuilder) {
         return webClient.post()
                 .uri(path)
@@ -214,15 +181,12 @@ public class DetectionService {
         if (confidence instanceof Number) {
             history.setConfidenceScore(((Number) confidence).doubleValue());
         }
-
         history.setAnalysisMetadata(toJson(result));
         history.setScanTimestamp(LocalDateTime.now());
-
         if (userId != null) {
             Users user = userRepository.findById(userId).orElse(null);
             history.setUser(user);
         }
-
         return detectionRepository.save(history);
     }
 
