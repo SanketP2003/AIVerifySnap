@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+Dataset/
+artifacts/
+artifacts_all_images/
+artifacts_new_dataset/
+all_images/
+train-*/
+test-*/
