@@ -65,7 +65,7 @@ export default function Home() {
       </section>
 
       {/* Main Upload / Drag Area with Glass Look */}
-      <section className="w-full max-w-5xl mx-auto px-4 pb-32">
+      {/* <section className="w-full max-w-5xl mx-auto px-4 pb-32">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -76,7 +76,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
           <UploadDropzone onUpload={handleUpload} />
         </motion.div>
-      </section>
+      </section> */}
 
       {/* Pillars Section */}
       <section className="w-full py-24 bg-muted/30 border-t">

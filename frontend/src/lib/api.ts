@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 const api = axios.create({
     baseURL: API_BASE_URL,
@@ -25,6 +25,16 @@ export interface DetectionResult {
     };
 }
 
+export interface DetectionHistoryItem {
+    scanId: number;
+    imagePath: string;
+    resultLabel: string;
+    confidenceScore: number;
+    analysisMetadata: string;
+    scanTimestamp: string;
+    user: { id: number; name: string; email: string } | null;
+}
+
 export const detectionApi = {
     detectImage: async (file: File, userId?: number): Promise<DetectionResult> => {
         const formData = new FormData();
@@ -40,18 +50,28 @@ export const detectionApi = {
         return response.data;
     },
 
-    getHistory: async () => {
+    getHistory: async (): Promise<DetectionHistoryItem[]> => {
         const response = await api.get('/detection/history');
         return response.data;
     },
 
-    getReport: async (id: string) => {
+    getReport: async (id: string): Promise<DetectionHistoryItem> => {
         const response = await api.get(`/detection/history/${id}`);
         return response.data;
     },
 
-    createUser: async (userData: Record<string, unknown>) => {
-        const response = await api.post('/api/users', userData);
+    registerUser: async (userData: { name: string; email: string; passwordHash?: string; role?: string; clerkId?: string }) => {
+        const response = await api.post('/api/users/register', userData);
+        return response.data;
+    },
+
+    getUserByName: async (name: string) => {
+        const response = await api.get(`/api/users/${name}`);
+        return response.data;
+    },
+
+    syncClerkUser: async (clerkData: { clerkId: string; name: string; email: string }) => {
+        const response = await api.post('/api/users/clerk-sync', clerkData);
         return response.data;
     },
 };

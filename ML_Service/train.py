@@ -93,6 +93,7 @@ def run_epoch(
     device: torch.device,
     train: bool,
     scaler: torch.amp.GradScaler,
+    grad_accum_steps: int = 1,
 ) -> Tuple[float, float]:
     if train:
         model.train()
@@ -102,27 +103,41 @@ def run_epoch(
     total_loss = 0.0
     total_correct = 0.0
     total_count = 0
+    step = 0
 
-    for rgb, ela, y in loader:
-        rgb = rgb.to(device)
-        ela = ela.to(device)
-        y = y.to(device)
+    if train:
+        optimizer.zero_grad(set_to_none=True)
+
+    for step, (rgb, ela, y) in enumerate(loader, start=1):
+        # Non-blocking copies let host-to-device transfer overlap with compute
+        # when DataLoader uses pinned memory.
+        rgb = rgb.to(device, non_blocking=True, memory_format=torch.channels_last)
+        ela = ela.to(device, non_blocking=True, memory_format=torch.channels_last)
+        y = y.to(device, non_blocking=True)
 
         with torch.set_grad_enabled(train):
             with torch.amp.autocast(device_type=device.type, enabled=(device.type == "cuda")):
                 logits = model(rgb, ela)
                 loss = loss_fn(logits, y)
+                if train and grad_accum_steps > 1:
+                    loss = loss / grad_accum_steps
 
             if train:
-                optimizer.zero_grad(set_to_none=True)
                 scaler.scale(loss).backward()
-                scaler.step(optimizer)
-                scaler.update()
+                if step % grad_accum_steps == 0:
+                    scaler.step(optimizer)
+                    scaler.update()
+                    optimizer.zero_grad(set_to_none=True)
 
         batch_size = y.size(0)
         total_loss += loss.item() * batch_size
         total_correct += compute_accuracy(logits.detach(), y) * batch_size
         total_count += batch_size
+
+    if train and step > 0 and (step % grad_accum_steps) != 0:
+        scaler.step(optimizer)
+        scaler.update()
+        optimizer.zero_grad(set_to_none=True)
 
     return total_loss / max(total_count, 1), total_correct / max(total_count, 1)
 
@@ -140,6 +155,13 @@ def train_model(args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
+    if device.type == "cuda":
+        torch.backends.cudnn.benchmark = True
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
+        if hasattr(torch, "set_float32_matmul_precision"):
+            torch.set_float32_matmul_precision("high")
+
     train_rgb, eval_rgb, train_ela, eval_ela = build_transforms(args.image_size)
 
     val_data_dir = args.val_data_dir if args.val_data_dir else args.data_dir
@@ -147,22 +169,43 @@ def train_model(args):
     train_ds = RGBELADataset(args.data_dir, args.train_split, train_rgb, train_ela)
     val_ds = RGBELADataset(val_data_dir, args.val_split, eval_rgb, eval_ela)
 
+    if args.num_workers < 0:
+        cpu_count = os.cpu_count() or 1
+        if os.name == "nt":
+            # Windows is more prone to shared file mapping failures with many workers.
+            args.num_workers = max(1, min(2, cpu_count // 4))
+        else:
+            # Keep one or two logical cores available for the UI and background tasks.
+            args.num_workers = max(1, cpu_count - 2)
+
+    loader_kwargs = {
+        "num_workers": args.num_workers,
+        "pin_memory": (device.type == "cuda"),
+    }
+    if args.num_workers > 0:
+        if os.name == "nt":
+            loader_kwargs["persistent_workers"] = False
+            loader_kwargs["prefetch_factor"] = 1
+        else:
+            loader_kwargs["persistent_workers"] = True
+            loader_kwargs["prefetch_factor"] = 2
+
     train_loader = DataLoader(
         train_ds,
         batch_size=args.batch_size,
         shuffle=True,
-        num_workers=args.num_workers,
-        pin_memory=(device.type == "cuda"),
+        **loader_kwargs,
     )
     val_loader = DataLoader(
         val_ds,
         batch_size=args.batch_size,
         shuffle=False,
-        num_workers=args.num_workers,
-        pin_memory=(device.type == "cuda"),
+        **loader_kwargs,
     )
 
-    model = AIVerifySnapModel().to(device)
+    model = AIVerifySnapModel(freeze_backbone=not args.fine_tune_backbone).to(device)
+    if device.type == "cuda":
+        model = model.to(memory_format=torch.channels_last)
 
     pos_weight = get_pos_weight(train_ds).to(device)
     loss_fn = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
@@ -189,7 +232,16 @@ def train_model(args):
     patience_counter = 0
 
     for epoch in range(1, args.epochs + 1):
-        train_loss, train_acc = run_epoch(model, train_loader, loss_fn, optimizer, device, True, scaler)
+        train_loss, train_acc = run_epoch(
+            model,
+            train_loader,
+            loss_fn,
+            optimizer,
+            device,
+            True,
+            scaler,
+            args.grad_accum_steps,
+        )
         val_loss, val_acc = run_epoch(model, val_loader, loss_fn, optimizer, device, False, scaler)
 
         scheduler.step(val_acc)
@@ -233,8 +285,10 @@ def parse_args():
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--learning-rate", type=float, default=1e-4)
     parser.add_argument("--weight-decay", type=float, default=1e-4)
-    parser.add_argument("--image-size", type=int, default=224)
-    parser.add_argument("--num-workers", type=int, default=2)
+    parser.add_argument("--image-size", type=int, default=160)
+    parser.add_argument("--num-workers", type=int, default=-1, help="Number of DataLoader workers; -1 uses most logical CPU cores")
+    parser.add_argument("--grad-accum-steps", type=int, default=2, help="Accumulate gradients across this many batches before optimizer step")
+    parser.add_argument("--fine-tune-backbone", action="store_true", help="Train the RGB backbone instead of freezing it for speed")
     parser.add_argument("--early-stop-patience", type=int, default=4)
     return parser.parse_args()
 

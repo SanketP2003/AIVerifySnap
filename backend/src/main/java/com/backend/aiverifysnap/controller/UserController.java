@@ -18,60 +18,74 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Users", description = "User management API")
 public class UserController {
 
-    private final UserService userService;
+        private final UserService userService;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
+        public UserController(UserService userService) {
+                this.userService = userService;
+        }
 
-    @Operation(summary = "Get user by name", description = "Retrieve user details by their name")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User found",
-                    content = @Content(schema = @Schema(implementation = UserDto.class))),
-            @ApiResponse(responseCode = "404", description = "User not found")
-    })
-    @GetMapping("/{name}")
-    public ResponseEntity<UserDto> getUser(
-            @Parameter(description = "Name of the user to retrieve") @PathVariable String name) {
-        UserDto user = userService.getUserByName(name);
-        return ResponseEntity.ok(user);
-    }
+        @Operation(summary = "Get user by name", description = "Retrieve user details by their name")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "User found", content = @Content(schema = @Schema(implementation = UserDto.class))),
+                        @ApiResponse(responseCode = "404", description = "User not found")
+        })
+        @GetMapping("/{name}")
+        public ResponseEntity<UserDto> getUser(
+                        @Parameter(description = "Name of the user to retrieve") @PathVariable String name) {
+                UserDto user = userService.getUserByName(name);
+                return ResponseEntity.ok(user);
+        }
 
-    @Operation(summary = "Register a new user", description = "Create a new user account")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User registered successfully",
-                    content = @Content(schema = @Schema(implementation = Users.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid user data")
-    })
-    @PostMapping("/register")
-    public ResponseEntity<Users> registerUser(@RequestBody Users user) {
-        Users usersaved = userService.registerUser(user);
-        return ResponseEntity.ok(usersaved);
-    }
+        @Operation(summary = "Register a new user", description = "Create a new user account")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "User registered successfully", content = @Content(schema = @Schema(implementation = Users.class))),
+                        @ApiResponse(responseCode = "400", description = "Invalid user data")
+        })
+        @PostMapping("/register")
+        public ResponseEntity<Users> registerUser(@RequestBody Users user) {
+                Users usersaved = userService.registerUser(user);
+                return ResponseEntity.ok(usersaved);
+        }
 
-    @Operation(summary = "Update user", description = "Update an existing user's details")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User updated successfully",
-                    content = @Content(schema = @Schema(implementation = UserDto.class))),
-            @ApiResponse(responseCode = "404", description = "User not found")
-    })
-    @PutMapping("/update/{name}")
-    public ResponseEntity<UserDto> updateUsers(
-            @Parameter(description = "Name of the user to update") @PathVariable String name,
-            @RequestBody Users user) {
-        UserDto usersaved = userService.updateUser(name, user);
-        return ResponseEntity.ok(usersaved);
-    }
+        @Operation(summary = "Update user", description = "Update an existing user's details")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "User updated successfully", content = @Content(schema = @Schema(implementation = UserDto.class))),
+                        @ApiResponse(responseCode = "404", description = "User not found")
+        })
+        @PutMapping("/update/{name}")
+        public ResponseEntity<UserDto> updateUsers(
+                        @Parameter(description = "Name of the user to update") @PathVariable String name,
+                        @RequestBody Users user) {
+                UserDto usersaved = userService.updateUser(name, user);
+                return ResponseEntity.ok(usersaved);
+        }
 
-    @Operation(summary = "Delete user", description = "Delete a user by their name")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "User not found")
-    })
-    @DeleteMapping("/delete/{name}")
-    public ResponseEntity<String> deleteUser(
-            @Parameter(description = "Name of the user to delete") @PathVariable String name) {
-        userService.deleteUserByName(name);
-        return ResponseEntity.ok("User deleted successfully!");
-    }
+        @Operation(summary = "Delete user", description = "Delete a user by their name")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "User deleted successfully"),
+                        @ApiResponse(responseCode = "404", description = "User not found")
+        })
+        @DeleteMapping("/delete/{name}")
+        public ResponseEntity<String> deleteUser(
+                        @Parameter(description = "Name of the user to delete") @PathVariable String name) {
+                userService.deleteUserByName(name);
+                return ResponseEntity.ok("User deleted successfully!");
+        }
+
+        @Operation(summary = "Sync Clerk user", description = "Create or update a user from Clerk authentication data")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "User synced successfully", content = @Content(schema = @Schema(implementation = UserDto.class))),
+                        @ApiResponse(responseCode = "400", description = "Invalid Clerk data")
+        })
+        @PostMapping("/clerk-sync")
+        public ResponseEntity<UserDto> syncClerkUser(@RequestBody java.util.Map<String, String> clerkData) {
+                String clerkId = clerkData.get("clerkId");
+                String name = clerkData.get("name");
+                String email = clerkData.get("email");
+                if (clerkId == null || clerkId.isBlank()) {
+                        return ResponseEntity.badRequest().build();
+                }
+                UserDto synced = userService.syncClerkUser(clerkId, name, email);
+                return ResponseEntity.ok(synced);
+        }
 }

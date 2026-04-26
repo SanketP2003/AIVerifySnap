@@ -9,6 +9,69 @@ import { Loader2, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import { detectionApi, DetectionResult } from "@/lib/api";
 
+const MAX_UPLOAD_DIM = 1024;
+const UPLOAD_QUALITY = 0.85;
+
+/**
+ * Resizes an image on the client side before uploading.
+ * Caps the image at MAX_UPLOAD_DIM px and converts to JPEG for smaller payload.
+ */
+function resizeImageForUpload(file: File): Promise<File> {
+    return new Promise((resolve, reject) => {
+        // If the file is already small (<200KB), skip resizing
+        if (file.size < 200 * 1024) {
+            resolve(file);
+            return;
+        }
+
+        const img = new window.Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            const { width, height } = img;
+
+            // If already within bounds, skip resize
+            if (width <= MAX_UPLOAD_DIM && height <= MAX_UPLOAD_DIM) {
+                resolve(file);
+                return;
+            }
+
+            // Calculate new dimensions maintaining aspect ratio
+            let newW = width;
+            let newH = height;
+            if (width > height) {
+                newW = MAX_UPLOAD_DIM;
+                newH = Math.round((height / width) * MAX_UPLOAD_DIM);
+            } else {
+                newH = MAX_UPLOAD_DIM;
+                newW = Math.round((width / height) * MAX_UPLOAD_DIM);
+            }
+
+            const canvas = document.createElement("canvas");
+            canvas.width = newW;
+            canvas.height = newH;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) { resolve(file); return; }
+            ctx.drawImage(img, 0, 0, newW, newH);
+
+            canvas.toBlob(
+                (blob) => {
+                    if (!blob) { resolve(file); return; }
+                    const resized = new File([blob], file.name, { type: "image/jpeg" });
+                    resolve(resized);
+                },
+                "image/jpeg",
+                UPLOAD_QUALITY
+            );
+        };
+        img.onerror = () => {
+            URL.revokeObjectURL(url);
+            reject(new Error("Failed to load image for resizing"));
+        };
+        img.src = url;
+    });
+}
+
 export default function DetectPage() {
     const [file, setFile] = useState<File | null>(null);
     const [analyzing, setAnalyzing] = useState(false);
@@ -28,7 +91,9 @@ export default function DetectPage() {
         setErrorMessage(null);
 
         try {
-            const result = await detectionApi.detectImage(uploadedFile);
+            // Resize the image client-side before uploading to reduce payload
+            const optimizedFile = await resizeImageForUpload(uploadedFile);
+            const result = await detectionApi.detectImage(optimizedFile);
             setDetectionResult(result);
             setResultReady(true);
         } catch (error: unknown) {
@@ -104,7 +169,7 @@ export default function DetectPage() {
                         Analyzing image using forensic AI...
                     </h2>
                     <p className="text-muted-foreground">
-                        Running SigLIP classifier and ELA analysis
+                        Running ResNet classifier and ELA CNN analysis
                     </p>
                 </motion.div>
             )}

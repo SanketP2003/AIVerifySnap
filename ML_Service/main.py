@@ -27,16 +27,29 @@ MODEL_NAME = "prithivMLmods/Deep-Fake-Detector-Model"
 # Explicit label mapping from the model card
 id2label = {0: "Fake", 1: "Real"}
 
-print(f"Loading model: {MODEL_NAME} ...")
-try:
-    processor = AutoImageProcessor.from_pretrained(MODEL_NAME)
-    model = SiglipForImageClassification.from_pretrained(MODEL_NAME)
-    model.eval()  # set to evaluation mode
-    print("Model and processor loaded successfully!")
-except Exception as e:
-    processor = None
-    model = None
-    print(f"FATAL — Error loading model: {e}")
+processor = None
+model = None
+
+def load_model(retries=3, delay=5):
+    global processor, model
+    for attempt in range(1, retries + 1):
+        print(f"Loading model: {MODEL_NAME} ... (attempt {attempt}/{retries})")
+        try:
+            processor = AutoImageProcessor.from_pretrained(MODEL_NAME)
+            model = SiglipForImageClassification.from_pretrained(MODEL_NAME)
+            model.eval()
+            print("Model and processor loaded successfully!")
+            return
+        except Exception as e:
+            print(f"Attempt {attempt} failed: {e}")
+            processor = None
+            model = None
+            if attempt < retries:
+                print(f"Retrying in {delay}s...")
+                time.sleep(delay)
+    print("FATAL — All model loading attempts failed.")
+
+load_model()
 
 
 @app.get("/")
@@ -88,7 +101,12 @@ async def detect_media(file: UploadFile = File(...)):
         top = scores[0]
 
         # 5. Generate real ELA (Error Level Analysis)
-        ela_img = generate_ela(img, quality=90)
+        # Resize to cap at 1024px before ELA to avoid slow processing on large images
+        MAX_ELA_DIM = 1024
+        img_for_ela = img.copy()
+        if max(img_for_ela.size) > MAX_ELA_DIM:
+            img_for_ela.thumbnail((MAX_ELA_DIM, MAX_ELA_DIM), Image.LANCZOS)
+        ela_img = generate_ela(img_for_ela, quality=90)
 
         # Compute ELA statistics
         ela_array = np.array(ela_img, dtype=np.float32)
@@ -124,4 +142,4 @@ async def detect_media(file: UploadFile = File(...)):
 
 if __name__ == "__main__":
     # Run the server locally on port 8000
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)

@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.2.7",
     "@fontsource/dm-serif-display": "^5.2.8",
     "@fontsource/inter": "^5.2.8",
     "@hookform/resolvers": "^5.2.2",

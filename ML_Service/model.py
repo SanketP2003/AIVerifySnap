@@ -3,13 +3,17 @@ import torch.nn as nn
 from torchvision import models
 
 class AIVerifySnapModel(nn.Module):
-    def __init__(self):
+    def __init__(self, freeze_backbone: bool = True):
         super(AIVerifySnapModel, self).__init__()
         
-        # Stream 1: Spatial/RGB features using a pre-trained ResNet50
-        # Replaces the final classification layer to output a 256-d feature vector
-        self.resnet = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
-        self.resnet.fc = nn.Linear(self.resnet.fc.in_features, 256)
+        # Stream 1: Spatial/RGB features using a lighter pre-trained ResNet18
+        # Faster than ResNet50 and better suited for quick local training.
+        self.resnet = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+        self.resnet.fc = nn.Linear(self.resnet.fc.in_features, 128)
+
+        if freeze_backbone:
+            for parameter in self.resnet.parameters():
+                parameter.requires_grad = False
         
         # Stream 2: ELA features using a custom lightweight CNN
         self.ela_cnn = nn.Sequential(
@@ -33,14 +37,18 @@ class AIVerifySnapModel(nn.Module):
         
         # Fusion Layer: Concatenates both streams and classifies
         self.classifier = nn.Sequential(
-            nn.Linear(256 + 256, 128),
+            nn.Linear(128 + 256, 128),
             nn.ReLU(inplace=True),
             nn.Dropout(0.5),
             nn.Linear(128, 1),
         )
 
     def forward(self, rgb, ela):
-        rgb_features = self.resnet(rgb)
+        if any(parameter.requires_grad for parameter in self.resnet.parameters()):
+            rgb_features = self.resnet(rgb)
+        else:
+            with torch.no_grad():
+                rgb_features = self.resnet(rgb)
         ela_features = self.ela_cnn(ela)
         
         # Concatenate features from both streams

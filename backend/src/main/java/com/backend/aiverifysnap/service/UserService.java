@@ -28,14 +28,17 @@ public class UserService {
     @Transactional
     public UserDto updateUser(String name, Users user) {
         Users existingUser = userRepository.findByName(name).orElseThrow(() -> new RuntimeException("User notfound"));
-        if((user.getName() != null && !user.getName().isEmpty()) ||
+        if ((user.getName() != null && !user.getName().isEmpty()) ||
                 (user.getEmail() != null && !user.getEmail().isEmpty()) ||
-                (user.getPasswordHash() != null && !user.getPasswordHash().isEmpty())
-        ) {
-            if (user.getName() != null) existingUser.setName(user.getName());
-            if (user.getEmail() != null) existingUser.setEmail(user.getEmail());
-            if (user.getPasswordHash() != null) existingUser.setPasswordHash(user.getPasswordHash());
-            if (user.getRole() != null) existingUser.setRole(user.getRole());
+                (user.getPasswordHash() != null && !user.getPasswordHash().isEmpty())) {
+            if (user.getName() != null)
+                existingUser.setName(user.getName());
+            if (user.getEmail() != null)
+                existingUser.setEmail(user.getEmail());
+            if (user.getPasswordHash() != null)
+                existingUser.setPasswordHash(user.getPasswordHash());
+            if (user.getRole() != null)
+                existingUser.setRole(user.getRole());
         }
         Users updatedUser = userRepository.save(existingUser);
         return convertToDto(updatedUser);
@@ -43,10 +46,26 @@ public class UserService {
 
     @Transactional
     public void deleteUserByName(String name) {
-        if(!userRepository.findByName(name).isPresent()) {
+        if (!userRepository.findByName(name).isPresent()) {
             throw new RuntimeException("User not found!");
         }
         userRepository.deleteByName(name);
+    }
+
+    @Transactional
+    public UserDto syncClerkUser(String clerkId, String name, String email) {
+        Users user = userRepository.findByClerkId(clerkId).orElse(null);
+        if (user == null) {
+            user = new Users();
+            user.setClerkId(clerkId);
+            user.setRole("USER");
+        }
+        if (name != null && !name.isEmpty())
+            user.setName(name);
+        if (email != null && !email.isEmpty())
+            user.setEmail(email);
+        Users saved = userRepository.save(user);
+        return convertToDto(saved);
     }
 
     private UserDto convertToDto(Users user) {

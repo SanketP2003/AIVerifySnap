@@ -32,6 +32,9 @@ public class Users {
     @Column(name = "role")
     private String role;
 
+    @Column(name = "clerk_id", unique = true)
+    private String clerkId;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
