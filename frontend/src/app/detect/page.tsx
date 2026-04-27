@@ -10,27 +10,21 @@ import Image from "next/image";
 import { detectionApi, DetectionResult } from "@/lib/api";
 
 const MAX_UPLOAD_DIM = 1024;
-const UPLOAD_QUALITY = 0.85;
 
 /**
  * Resizes an image on the client side before uploading.
- * Caps the image at MAX_UPLOAD_DIM px and converts to JPEG for smaller payload.
+ * Caps the image at MAX_UPLOAD_DIM px while preserving the original format
+ * to avoid destroying compression artifacts that the deepfake model relies on.
  */
 function resizeImageForUpload(file: File): Promise<File> {
     return new Promise((resolve, reject) => {
-        // If the file is already small (<200KB), skip resizing
-        if (file.size < 200 * 1024) {
-            resolve(file);
-            return;
-        }
-
         const img = new window.Image();
         const url = URL.createObjectURL(file);
         img.onload = () => {
             URL.revokeObjectURL(url);
             const { width, height } = img;
 
-            // If already within bounds, skip resize
+            // If already within bounds, send original unchanged
             if (width <= MAX_UPLOAD_DIM && height <= MAX_UPLOAD_DIM) {
                 resolve(file);
                 return;
@@ -54,14 +48,19 @@ function resizeImageForUpload(file: File): Promise<File> {
             if (!ctx) { resolve(file); return; }
             ctx.drawImage(img, 0, 0, newW, newH);
 
+            // Preserve original format — avoid re-encoding to JPEG which
+            // destroys compression artifacts the deepfake detector relies on
+            const mimeType = file.type || "image/png";
+            const quality = mimeType === "image/jpeg" ? 0.95 : undefined;
+
             canvas.toBlob(
                 (blob) => {
                     if (!blob) { resolve(file); return; }
-                    const resized = new File([blob], file.name, { type: "image/jpeg" });
+                    const resized = new File([blob], file.name, { type: mimeType });
                     resolve(resized);
                 },
-                "image/jpeg",
-                UPLOAD_QUALITY
+                mimeType,
+                quality
             );
         };
         img.onerror = () => {
@@ -132,7 +131,7 @@ export default function DetectPage() {
                         </p>
 
                         <p className="text-xs text-muted-foreground">
-                            Using SigLIP Deepfake Detector with real ELA analysis
+                            Powered by SigLIP Vision Transformer with ELA forensic analysis
                         </p>
 
                         <div className="bg-card p-4 rounded-[2rem] shadow-sm border">

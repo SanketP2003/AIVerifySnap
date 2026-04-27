@@ -135,7 +135,7 @@ public class DetectionService {
         long processingMs = mlTime instanceof Number ? ((Number) mlTime).longValue() : elapsedMs;
         result.put("processing_time_ms", processingMs);
         result.put("elapsed_ms", elapsedMs);
-        result.put("model_status", "SigLIP Deepfake Detector v1");
+        result.put("model_status", "SigLIP Deepfake Detector (94.4% acc)");
         Map<String, Object> details = new HashMap<>();
         details.put("raw_output", rawOutput);
         Object elaData = mlResponse.get("ela");

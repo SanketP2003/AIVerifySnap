@@ -4,9 +4,6 @@ __pycache__/
 *.pyd
 venv/
 Dataset/
+CASIA2/
+CASIA2_prepared/
 artifacts/
-artifacts_all_images/
-artifacts_new_dataset/
-all_images/
-train-*/
-test-*/

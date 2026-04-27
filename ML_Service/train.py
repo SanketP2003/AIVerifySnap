@@ -210,16 +210,23 @@ def train_model(args):
     pos_weight = get_pos_weight(train_ds).to(device)
     loss_fn = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 
-    optimizer = torch.optim.AdamW(
-        model.parameters(),
-        lr=args.learning_rate,
-        weight_decay=args.weight_decay,
-    )
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer,
-        mode="max",
-        factor=0.5,
-        patience=2,
+    backbone_params = []
+    head_params = []
+    for name, param in model.named_parameters():
+        if not param.requires_grad:
+            continue
+        if name.startswith("resnet."):
+            backbone_params.append(param)
+        else:
+            head_params.append(param)
+
+    optimizer = torch.optim.AdamW([
+        {"params": backbone_params, "lr": args.learning_rate * 0.1},
+        {"params": head_params, "lr": args.learning_rate},
+    ], weight_decay=args.weight_decay)
+
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
+        optimizer, T_0=5, T_mult=2,
     )
 
     scaler = torch.amp.GradScaler(enabled=(device.type == "cuda"))
@@ -244,7 +251,7 @@ def train_model(args):
         )
         val_loss, val_acc = run_epoch(model, val_loader, loss_fn, optimizer, device, False, scaler)
 
-        scheduler.step(val_acc)
+        scheduler.step(epoch)
 
         print(
             f"Epoch {epoch:03d}/{args.epochs} | "
@@ -281,15 +288,15 @@ def parse_args():
     parser.add_argument("--train-split", type=str, default="train", help="Training split folder name")
     parser.add_argument("--val-split", type=str, default="val", help="Validation split folder name")
     parser.add_argument("--output-dir", type=str, default="artifacts", help="Directory to save checkpoints")
-    parser.add_argument("--epochs", type=int, default=15)
-    parser.add_argument("--batch-size", type=int, default=16)
-    parser.add_argument("--learning-rate", type=float, default=1e-4)
+    parser.add_argument("--epochs", type=int, default=25)
+    parser.add_argument("--batch-size", type=int, default=32)
+    parser.add_argument("--learning-rate", type=float, default=3e-4)
     parser.add_argument("--weight-decay", type=float, default=1e-4)
-    parser.add_argument("--image-size", type=int, default=160)
+    parser.add_argument("--image-size", type=int, default=224)
     parser.add_argument("--num-workers", type=int, default=-1, help="Number of DataLoader workers; -1 uses most logical CPU cores")
     parser.add_argument("--grad-accum-steps", type=int, default=2, help="Accumulate gradients across this many batches before optimizer step")
     parser.add_argument("--fine-tune-backbone", action="store_true", help="Train the RGB backbone instead of freezing it for speed")
-    parser.add_argument("--early-stop-patience", type=int, default=4)
+    parser.add_argument("--early-stop-patience", type=int, default=6)
     return parser.parse_args()
 
 
