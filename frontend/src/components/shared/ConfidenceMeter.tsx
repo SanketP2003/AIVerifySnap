@@ -4,13 +4,15 @@ import 'react-circular-progressbar/dist/styles.css';
 interface ConfidenceMeterProps {
     score: number; // 0 to 100
     label?: string;
+    result?: "Real" | "AI Generated" | "Suspicious";
 }
 
-export function ConfidenceMeter({ score, label = "Confidence" }: ConfidenceMeterProps) {
-    const isHighRisk = score > 75;
-    const isMediumRisk = score > 40 && score <= 75;
-
-    const pathColor = isHighRisk ? '#ef4444' : isMediumRisk ? '#eab308' : '#22c55e'; // red, yellow, green depending on fake confidence
+export function ConfidenceMeter({ score, label = "Confidence", result }: ConfidenceMeterProps) {
+    const pathColor = result === "Real"
+        ? '#22c55e'
+        : result === "Suspicious"
+            ? '#eab308'
+            : '#ef4444';
 
     return (
         <div className="flex flex-col items-center justify-center p-4">

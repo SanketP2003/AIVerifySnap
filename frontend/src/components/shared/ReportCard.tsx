@@ -24,11 +24,13 @@ export function ReportCard({
                 <div className="flex flex-col">
                     <p className="text-sm text-balance text-muted-foreground mb-1">Detection Result</p>
                     <div className="flex items-center space-x-3">
-                        <h3 className="text-2xl font-bold">{result}</h3>
+                        <h3 className={`text-2xl font-bold ${result === "Real" ? "text-green-600" : result === "Suspicious" ? "text-yellow-600" : "text-destructive"}`}>
+                            {result}
+                        </h3>
                         <ResultBadge status={result} />
                     </div>
                 </div>
-                <ConfidenceMeter score={confidence} />
+                <ConfidenceMeter score={confidence} result={result} />
             </div>
 
             <div className="flex flex-col space-y-4 text-sm font-medium">

@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
@@ -21,6 +22,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.concurrent.CompletableFuture;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -181,13 +183,31 @@ public class DetectionService {
         if (confidence instanceof Number) {
             history.setConfidenceScore(((Number) confidence).doubleValue());
         }
-        history.setAnalysisMetadata(toJson(result));
+
+        // Strip base64 ELA image from database save to avoid column size constraint
+        Map<String, Object> resultForDb = new HashMap<>(result);
+        if (resultForDb.containsKey("details")) {
+            Map<String, Object> details = new HashMap<>((Map<String, Object>) resultForDb.get("details"));
+            details.remove("ela_image_base64");
+            resultForDb.put("details", details);
+        }
+        history.setAnalysisMetadata(toJson(resultForDb));
         history.setScanTimestamp(LocalDateTime.now());
         if (userId != null) {
             Users user = userRepository.findById(userId).orElse(null);
             history.setUser(user);
         }
         return detectionRepository.save(history);
+    }
+
+    @Async
+    public CompletableFuture<Void> saveDetectionAsync(Map<String, Object> result, String imagePath, Long userId) {
+        try {
+            saveDetection(result, imagePath, userId);
+        } catch (Exception e) {
+            log.warn("Failed to persist detection history asynchronously: {}", e.toString());
+        }
+        return CompletableFuture.completedFuture(null);
     }
 
     public List<DetectionHistory> getAllDetections() {

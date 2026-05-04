@@ -9,7 +9,7 @@ from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 from torchvision import datasets, transforms
 
-from model import AIVerifySnapModel
+from model import AIVerifySnapModel, AIVerifySnapModelV1
 from utils import generate_ela
 
 
@@ -203,7 +203,12 @@ def train_model(args):
         **loader_kwargs,
     )
 
-    model = AIVerifySnapModel(freeze_backbone=not args.fine_tune_backbone).to(device)
+    if args.model_version == "v1":
+        model = AIVerifySnapModelV1(freeze_backbone=not args.fine_tune_backbone).to(device)
+        print("Using AIVerifySnapModelV1 architecture")
+    else:
+        model = AIVerifySnapModel(freeze_backbone=not args.fine_tune_backbone).to(device)
+        print("Using AIVerifySnapModel (latest) architecture")
     if device.type == "cuda":
         model = model.to(memory_format=torch.channels_last)
 
@@ -297,6 +302,7 @@ def parse_args():
     parser.add_argument("--grad-accum-steps", type=int, default=2, help="Accumulate gradients across this many batches before optimizer step")
     parser.add_argument("--fine-tune-backbone", action="store_true", help="Train the RGB backbone instead of freezing it for speed")
     parser.add_argument("--early-stop-patience", type=int, default=6)
+    parser.add_argument("--model-version", type=str, default="latest", choices=["v1", "latest"], help="Model architecture version: v1 (simpler, matches old checkpoint) or latest")
     return parser.parse_args()
 
 

@@ -36,7 +36,7 @@ public class DetectionController {
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(result);
         }
         String imagePath = file.getOriginalFilename();
-        detectionService.saveDetection(result, imagePath, userId);
+        detectionService.saveDetectionAsync(result, imagePath, userId);
         return ResponseEntity.ok(result);
     }
 

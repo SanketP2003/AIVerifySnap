@@ -9,7 +9,7 @@ import { Loader2, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import { detectionApi, DetectionResult } from "@/lib/api";
 
-const MAX_UPLOAD_DIM = 1024;
+const MAX_UPLOAD_DIM = 512;
 
 /**
  * Resizes an image on the client side before uploading.
