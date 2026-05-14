@@ -9,8 +9,8 @@ from PIL import Image
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from torchvision import transforms
 
-from model import AIVerifySnapModel, AIVerifySnapModelV1
-from utils import generate_ela
+from .model import AIVerifySnapModel, AIVerifySnapModelV1
+from .utils import generate_ela
 
 app = FastAPI(
     title="AIVerifySnap AI Service Layer",
