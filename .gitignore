@@ -1,0 +1,39 @@
+.idea/
+.idea.zip
+out/
+qodana.sarif.json
+qodana.yaml
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+
+# ML artifacts & datasets
+ml_service/artifacts/
+ml_service/data/
+ml_service/Dataset/
+ml_service/CASIA2/
+ml_service/CASIA2_prepared/
+ml_service/venv/
+
+# Node
+node_modules/
+.next/
+
+# Local environment files
+.env
+.env.*
+
+# Python venv
+.venv/
+
+# Backend build output
+backend/target/
+
+# ML service artifacts
+ML_Service/artifacts/
+
+# Frontend
+frontend/node_modules/

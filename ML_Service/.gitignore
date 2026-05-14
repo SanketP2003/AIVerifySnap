@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+Dataset/
+CASIA2/
+CASIA2_prepared/
+artifacts/
