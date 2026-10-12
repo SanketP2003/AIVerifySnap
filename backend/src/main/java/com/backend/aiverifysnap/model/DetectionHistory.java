@@ -29,7 +29,6 @@ public class DetectionHistory {
     @Column(name = "confidence_Score")
     private Double confidenceScore;
 
-        @Lob
     @Column(name = "analysis_metadata", columnDefinition = "TEXT")
     private String analysisMetadata;
 

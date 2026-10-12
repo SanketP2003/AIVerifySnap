@@ -12,5 +12,9 @@ public class UserDto {
     private String name;
     private String email;
     private String role;
+    private String clerkId;
+    private String plan;
+    private Integer scansToday;
+    private String apiKey;
 
 }

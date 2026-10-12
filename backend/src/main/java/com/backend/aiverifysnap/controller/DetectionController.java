@@ -40,9 +40,42 @@ public class DetectionController {
         return ResponseEntity.ok(result);
     }
 
+    @PostMapping(value = "/analyze-bulk", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, Object>> analyzeBulk(
+            @Parameter(description = "Image files to analyze (up to 50)") @RequestParam("files") MultipartFile[] files,
+            @Parameter(description = "User ID (optional)") @RequestParam(value = "userId", required = false) Long userId) {
+        if (files == null || files.length == 0) {
+            return ResponseEntity.badRequest().body(Map.of("error", "No files provided"));
+        }
+        Map<String, Object> result = detectionService.detectBulkDeepfake(files, userId);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping(value = "/reverse-search", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, Object>> reverseSearch(
+            @Parameter(description = "Image file for Google Lens reverse search") @RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "File is empty"));
+        }
+        Map<String, Object> result = detectionService.reverseImageSearch(file);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping(value = "/identity-protect", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, Object>> identityProtect(
+            @Parameter(description = "User portrait reference image") @RequestParam("file") MultipartFile file,
+            @Parameter(description = "User ID (optional)") @RequestParam(value = "userId", required = false) Long userId) {
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "File is empty"));
+        }
+        Map<String, Object> result = detectionService.identityProtectionScan(file, userId);
+        return ResponseEntity.ok(result);
+    }
+
     @GetMapping("/history")
-    public ResponseEntity<List<DetectionHistory>> getAllDetections() {
-        List<DetectionHistory> detections = detectionService.getAllDetections();
+    public ResponseEntity<List<DetectionHistory>> getAllDetections(
+            @Parameter(description = "Filter by User ID (optional)") @RequestParam(value = "userId", required = false) Long userId) {
+        List<DetectionHistory> detections = detectionService.getUserDetections(userId);
         return ResponseEntity.ok(detections);
     }
 
@@ -51,5 +84,12 @@ public class DetectionController {
             @Parameter(description = "Scan ID of the detection") @PathVariable Long scanId) {
         DetectionHistory detection = detectionService.getDetectionById(scanId);
         return ResponseEntity.ok(detection);
+    }
+
+    @DeleteMapping("/history/{scanId}")
+    public ResponseEntity<Map<String, String>> deleteDetectionById(
+            @Parameter(description = "Scan ID of the detection to delete") @PathVariable Long scanId) {
+        detectionService.deleteDetection(scanId);
+        return ResponseEntity.ok(Map.of("message", "Scan history deleted successfully", "scanId", scanId.toString()));
     }
 }

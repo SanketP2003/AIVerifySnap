@@ -46,5 +46,15 @@ public class DatabaseMigration {
         } catch (Exception e) {
             log.debug("Sequence sync skipped: {}", e.getMessage());
         }
+        try {
+            jdbcTemplate.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS plan VARCHAR(50) DEFAULT 'STARTER'");
+            jdbcTemplate.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS scans_today INT DEFAULT 0");
+            jdbcTemplate.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS last_scan_date DATE");
+            jdbcTemplate.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS api_key VARCHAR(100)");
+            jdbcTemplate.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS webhook_url VARCHAR(255)");
+            log.info("Ensured users plan, scans_today, api_key columns exist");
+        } catch (Exception e) {
+            log.debug("Users column migration skipped: {}", e.getMessage());
+        }
     }
 }

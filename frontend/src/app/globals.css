@@ -80,10 +80,15 @@
   }
 }
 
+/* ─── Glass panel ─── */
 .glass-panel {
   @apply bg-white/70 backdrop-blur-2xl border border-white/40 shadow-xl;
 }
+.dark .glass-panel {
+  @apply bg-white/5 border-white/10;
+}
 
+/* ─── Ambient glow backgrounds ─── */
 .subtle-orange-light {
   position: absolute;
   width: 600px;
@@ -102,4 +107,63 @@
   filter: blur(120px);
   z-index: -2;
   pointer-events: none;
+}
+
+/* ─── Skip to content (a11y) ─── */
+.skip-to-content {
+  @apply sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg focus:shadow-lg;
+}
+
+/* ─── Focus ring utility ─── */
+.focus-ring {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+}
+
+/* ─── Smooth page transitions ─── */
+.page-enter {
+  animation: pageEnter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Reduced motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─── Mobile nav overlay ─── */
+.mobile-nav-overlay {
+  @apply fixed inset-0 z-50 bg-background/80 backdrop-blur-md;
+}
+
+/* ─── Scrollbar styling ─── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
 }

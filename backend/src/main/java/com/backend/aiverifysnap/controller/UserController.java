@@ -88,4 +88,31 @@ public class UserController {
                 UserDto synced = userService.syncClerkUser(clerkId, name, email);
                 return ResponseEntity.ok(synced);
         }
+
+        @Operation(summary = "Update user plan", description = "Upgrade or change user subscription plan (STARTER, PROFESSIONAL, ENTERPRISE)")
+        @PutMapping("/{name}/plan")
+        public ResponseEntity<UserDto> updateUserPlan(
+                        @PathVariable String name,
+                        @RequestBody java.util.Map<String, String> planBody) {
+                String newPlan = planBody.get("plan");
+                if (newPlan == null || newPlan.isBlank()) {
+                        return ResponseEntity.badRequest().build();
+                }
+                UserDto updated = userService.updateUserPlan(name, newPlan);
+                return ResponseEntity.ok(updated);
+        }
+
+        @Operation(summary = "Get user quota & limits", description = "Retrieve remaining daily scans and plan limits for a user")
+        @GetMapping("/{name}/quota")
+        public ResponseEntity<java.util.Map<String, Object>> getUserQuota(@PathVariable String name) {
+                java.util.Map<String, Object> quota = userService.getUserQuota(name);
+                return ResponseEntity.ok(quota);
+        }
+
+        @Operation(summary = "Generate API key", description = "Generate or rotate REST API key for developer / enterprise user")
+        @PostMapping("/{name}/api-key")
+        public ResponseEntity<java.util.Map<String, String>> generateApiKey(@PathVariable String name) {
+                String key = userService.generateApiKey(name);
+                return ResponseEntity.ok(java.util.Map.of("apiKey", key, "status", "active"));
+        }
 }
