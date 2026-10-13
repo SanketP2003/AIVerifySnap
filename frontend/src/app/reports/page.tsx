@@ -21,26 +21,35 @@ function getSha256(item: DetectionHistoryItem): string {
     if (item.analysisMetadata) {
         try {
             const meta = JSON.parse(item.analysisMetadata);
-            if (typeof meta.sha256 === "string") return meta.sha256;
+            if (typeof meta.sha256 === "string" && meta.sha256.trim() !== "") {
+                return meta.sha256;
+            }
         } catch {
-            // ignore
+            // ignore malformed JSON
         }
     }
-    return `7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f${item.scanId}`;
+    return "";
 }
 
 export default function ReportsCatalogPage() {
     const [history, setHistory] = useState<DetectionHistoryItem[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<"all" | "fake" | "real">("all");
     const [copiedHash, setCopiedHash] = useState<string | null>(null);
 
     const loadData = () => {
         setLoading(true);
+        setError(null);
         detectionApi.getHistory()
-            .then((data) => setHistory(data || []))
-            .catch(() => setHistory([]))
+            .then((data) => {
+                setHistory(data || []);
+            })
+            .catch((err) => {
+                console.error("Reports loading error:", err);
+                setError(err instanceof Error ? err.message : "Failed to load reports from analysis service.");
+            })
             .finally(() => setLoading(false));
     };
 
@@ -49,30 +58,31 @@ export default function ReportsCatalogPage() {
     }, []);
 
     const copyToClipboard = (text: string) => {
+        if (!text) return;
         navigator.clipboard.writeText(text);
         setCopiedHash(text);
         setTimeout(() => setCopiedHash(null), 2000);
     };
 
     const downloadDossier = (item: DetectionHistoryItem) => {
-        const hash = getSha256(item);
+        const hash = getSha256(item) || "Unavailable from analysis service";
         const dossier = {
-            title: "AIVerifySnap Forensic Analysis Dossier",
+            title: "AIVerifySnap Forensic Analysis Report",
             scanId: item.scanId,
             timestamp: item.scanTimestamp,
             imagePath: item.imagePath,
             verdict: item.resultLabel,
-            confidenceScore: item.confidenceScore,
+            confidenceScore: item.confidenceScore != null ? item.confidenceScore : "Not provided",
             sha256Hash: hash,
             metadata: item.analysisMetadata,
-            issuer: "AIVerifySnap Sovereign Forensic Engine v2.4",
-            disclaimer: "Probabilistic neural detection and Error Level Analysis decision support."
+            issuer: "AIVerifySnap Media Analysis Engine",
+            disclaimer: "Statistical neural detection and Error Level Analysis decision support."
         };
         const blob = new Blob([JSON.stringify(dossier, null, 2)], { type: "application/json" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `forensic-dossier-scan-${item.scanId}.json`;
+        a.download = `analysis-dossier-scan-${item.scanId}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -85,10 +95,10 @@ export default function ReportsCatalogPage() {
         generatePdfReport({
             reportId: `AVS-${item.scanId}`,
             fileName: fileName,
-            result: item.resultLabel || "AI Generated",
-            confidence: item.confidenceScore || 94.2,
+            result: item.resultLabel || "Analysis Completed",
+            confidence: item.confidenceScore != null ? item.confidenceScore : 0,
             timestamp: item.scanTimestamp ? new Date(item.scanTimestamp).toLocaleString() : new Date().toLocaleString(),
-            sha256Hash: hash,
+            sha256Hash: hash || "Unavailable from analysis service",
             model: "SigLIP ViT + Error Level Analysis (ELA)",
         });
     };
@@ -99,7 +109,7 @@ export default function ReportsCatalogPage() {
             const matchesSearch =
                 (item.imagePath && item.imagePath.toLowerCase().includes(searchQuery.toLowerCase())) ||
                 String(item.scanId).includes(searchQuery) ||
-                hash.toLowerCase().includes(searchQuery.toLowerCase());
+                (hash && hash.toLowerCase().includes(searchQuery.toLowerCase()));
 
             const matchesStatus =
                 statusFilter === "all" ||
@@ -112,6 +122,7 @@ export default function ReportsCatalogPage() {
     const totalScans = history.length;
     const fakeCount = history.filter((h) => h.resultLabel?.toLowerCase() === "fake").length;
     const realCount = history.filter((h) => h.resultLabel?.toLowerCase() === "real").length;
+    const hashedScansCount = history.filter((h) => !!getSha256(h)).length;
 
     return (
         <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-8">
@@ -119,16 +130,16 @@ export default function ReportsCatalogPage() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-border/80 gap-4">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
-                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                        <span className="w-2 h-2 rounded-full bg-primary" />
                         <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
-                            Dossiers &middot; Cryptographic Certificates
+                            Dossiers &middot; Forensic Records
                         </span>
                     </div>
                     <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground font-sans">
-                        Forensic Reports & Certificates
+                        Forensic Reports & Dossiers
                     </h1>
                     <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                        Inspect, verify, and export tamper-evident forensic certificates and technical dossiers.
+                        Inspect, verify, and export automated forensic analysis reports and technical dossiers.
                     </p>
                 </div>
 
@@ -138,7 +149,7 @@ export default function ReportsCatalogPage() {
                         onClick={loadData}
                         disabled={loading}
                         className="px-3.5 py-2 rounded-xl bg-card border border-border text-xs font-semibold text-foreground hover:bg-muted transition-colors flex items-center gap-1.5 shadow-sm"
-                        title="Sync latest ledger certificates"
+                        title="Sync latest reports"
                     >
                         <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
                         <span>Sync</span>
@@ -157,10 +168,10 @@ export default function ReportsCatalogPage() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="p-5 rounded-3xl bg-card border border-border shadow-sm space-y-1">
                     <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        Total Certificates
+                        Total Reports
                     </span>
                     <div className="text-3xl font-black font-mono text-foreground">{totalScans}</div>
-                    <p className="text-[11px] text-muted-foreground">Indexed in ledger</p>
+                    <p className="text-[11px] text-muted-foreground">Historical records</p>
                 </div>
 
                 <div className="p-5 rounded-3xl bg-card border border-border shadow-sm space-y-1">
@@ -176,18 +187,18 @@ export default function ReportsCatalogPage() {
                         Authentic Findings
                     </span>
                     <div className="text-3xl font-black font-mono text-green-600">{realCount}</div>
-                    <p className="text-[11px] text-green-600 font-medium">Natural camera optics</p>
+                    <p className="text-[11px] text-green-600 font-medium">Camera source frames</p>
                 </div>
 
                 <div className="p-5 rounded-3xl bg-card border border-border shadow-sm space-y-1">
                     <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        Ledger Integrity
+                        Cryptographic Hashes
                     </span>
                     <div className="text-3xl font-black font-mono text-foreground flex items-center gap-2">
-                        <span>100%</span>
-                        <Shield className="w-5 h-5 text-green-500" />
+                        <span>{hashedScansCount}/{totalScans}</span>
+                        <Shield className="w-5 h-5 text-primary" />
                     </div>
-                    <p className="text-[11px] text-muted-foreground">SHA-256 verifiable</p>
+                    <p className="text-[11px] text-muted-foreground">SHA-256 verified</p>
                 </div>
             </div>
 
@@ -235,15 +246,38 @@ export default function ReportsCatalogPage() {
                 </div>
             </div>
 
+            {/* Error State */}
+            {error && !loading && (
+                <div className="p-12 rounded-3xl bg-destructive/10 border border-destructive/20 text-center space-y-4 shadow-sm">
+                    <div className="w-16 h-16 rounded-full bg-destructive/20 text-destructive flex items-center justify-center mx-auto">
+                        <FileText className="w-8 h-8" />
+                    </div>
+                    <div className="space-y-1">
+                        <h3 className="text-base font-bold text-foreground">Failed to Load Reports</h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto">
+                            {error}
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={loadData}
+                        className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-foreground text-background text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-all shadow-sm"
+                    >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        <span>Retry</span>
+                    </button>
+                </div>
+            )}
+
             {/* Reports List */}
-            {filteredReports.length > 0 ? (
+            {!error && filteredReports.length > 0 ? (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
                     {filteredReports.slice(0, 30).map((item) => {
                         const isFake = item.resultLabel?.toLowerCase() === "fake";
                         const status = isFake ? "AI Generated" : "Real";
                         const fileName = item.imagePath ? item.imagePath.replace(/^.*[\\/]/, '') : "unnamed_frame.png";
                         const hash = getSha256(item);
-                        const shortHash = `${hash.slice(0, 10)}...${hash.slice(-8)}`;
+                        const shortHash = hash ? `${hash.slice(0, 10)}...${hash.slice(-8)}` : "Unavailable";
 
                         return (
                             <div
@@ -254,7 +288,7 @@ export default function ReportsCatalogPage() {
                                     {/* Top Bar of Card */}
                                     <div className="flex items-center justify-between pb-3 border-b border-border/60">
                                         <span className="font-mono text-xs font-bold text-muted-foreground">
-                                            CERTIFICATE #{item.scanId}
+                                            REPORT #{item.scanId}
                                         </span>
                                         <ResultBadge status={status} size="sm" />
                                     </div>
@@ -272,26 +306,30 @@ export default function ReportsCatalogPage() {
                                     {/* Metrics pill */}
                                     <div className="p-3 rounded-2xl bg-muted/30 border border-border/40 space-y-2 text-xs">
                                         <div className="flex justify-between items-center">
-                                            <span className="text-muted-foreground">Certainty Score</span>
+                                            <span className="text-muted-foreground">Model Confidence</span>
                                             <span className="font-mono font-bold text-foreground">
-                                                {item.confidenceScore?.toFixed(1) || 0}%
+                                                {item.confidenceScore != null ? `${item.confidenceScore.toFixed(1)}%` : "Not provided"}
                                             </span>
                                         </div>
                                         <div className="flex justify-between items-center text-[11px]">
                                             <span className="text-muted-foreground">SHA-256 Digest</span>
-                                            <button
-                                                type="button"
-                                                onClick={() => copyToClipboard(hash)}
-                                                className="font-mono text-muted-foreground hover:text-foreground flex items-center gap-1"
-                                                title="Click to copy full SHA-256 hash"
-                                            >
-                                                <span>{shortHash}</span>
-                                                {copiedHash === hash ? (
-                                                    <Check className="w-3 h-3 text-green-500" />
-                                                ) : (
-                                                    <Copy className="w-3 h-3 opacity-60" />
-                                                )}
-                                            </button>
+                                            {hash ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => copyToClipboard(hash)}
+                                                    className="font-mono text-muted-foreground hover:text-foreground flex items-center gap-1"
+                                                    title="Click to copy full SHA-256 hash"
+                                                >
+                                                    <span>{shortHash}</span>
+                                                    {copiedHash === hash ? (
+                                                        <Check className="w-3 h-3 text-green-500" />
+                                                    ) : (
+                                                        <Copy className="w-3 h-3 opacity-60" />
+                                                    )}
+                                                </button>
+                                            ) : (
+                                                <span className="font-mono text-muted-foreground italic">Not provided</span>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -302,14 +340,14 @@ export default function ReportsCatalogPage() {
                                         href={`/report/${item.scanId}`}
                                         className="flex-1 py-2 px-3 rounded-xl bg-foreground text-background text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-all text-center flex items-center justify-center gap-1.5 shadow-sm"
                                     >
-                                        <span>View Certificate</span>
+                                        <span>View Report</span>
                                         <ArrowRight className="w-3.5 h-3.5" />
                                     </Link>
                                     <button
                                         type="button"
                                         onClick={() => downloadPdfDossier(item)}
                                         className="p-2 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold transition-colors flex items-center justify-center"
-                                        title="Download Certified Forensic PDF Report"
+                                        title="Download Forensic PDF Report"
                                     >
                                         <FileText className="w-4 h-4" />
                                     </button>
@@ -326,19 +364,19 @@ export default function ReportsCatalogPage() {
                         );
                     })}
                 </div>
-            ) : (
+            ) : !error && (
                 <div className="p-12 rounded-3xl bg-card border border-border shadow-sm text-center space-y-4">
                     <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto text-muted-foreground">
                         <FileText className="w-8 h-8" />
                     </div>
                     <div className="space-y-1">
                         <h3 className="text-base font-bold text-foreground">
-                            {searchQuery ? "No Matching Reports Found" : "No Reports in Ledger"}
+                            {searchQuery ? "No Matching Reports Found" : "No Reports Recorded"}
                         </h3>
                         <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto">
                             {searchQuery
                                 ? "Try broadening your search query or reset status filters."
-                                : "Upload an image in Image Authenticity workspace to generate your first verifiable certificate."}
+                                : "Upload an image in the analysis workspace to generate your first technical report."}
                         </p>
                     </div>
                     <Link

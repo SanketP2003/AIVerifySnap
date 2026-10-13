@@ -22,12 +22,17 @@ import { ResultBadge } from "@/components/shared/ResultBadge";
 export default function DashboardOverviewPage() {
     const [history, setHistory] = useState<DetectionHistoryItem[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     const loadData = () => {
         setLoading(true);
+        setError(null);
         detectionApi.getHistory()
             .then((data) => setHistory(data || []))
-            .catch(() => setHistory([]))
+            .catch((err) => {
+                console.error("Dashboard history error:", err);
+                setError(err instanceof Error ? err.message : "Failed to load scan records from service.");
+            })
             .finally(() => setLoading(false));
     };
 
@@ -48,16 +53,16 @@ export default function DashboardOverviewPage() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-border/80 gap-4">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
-                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                        <span className="w-2 h-2 rounded-full bg-primary" />
                         <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
-                            Operational Workspace &middot; Node Cluster 01
+                            Operational Workspace &middot; Detection Engine
                         </span>
                     </div>
                     <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground font-sans">
                         Workspace Overview
                     </h1>
                     <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                        Central console for media authenticity verification, ledger records, and forensic tools.
+                        Central console for media authenticity verification, analysis history, and forensic tools.
                     </p>
                 </div>
 
@@ -67,7 +72,7 @@ export default function DashboardOverviewPage() {
                         onClick={loadData}
                         disabled={loading}
                         className="px-3.5 py-2 rounded-xl bg-card border border-border text-xs font-semibold text-foreground hover:bg-muted transition-colors flex items-center gap-1.5 shadow-sm"
-                        title="Refresh ledger state"
+                        title="Refresh analysis state"
                     >
                         <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
                         <span>Sync</span>
@@ -90,7 +95,7 @@ export default function DashboardOverviewPage() {
                         <History className="w-4 h-4 text-primary" />
                     </div>
                     <div className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-foreground">
-                        {totalScans}
+                        {error ? "Unavailable" : totalScans}
                     </div>
                     <p className="text-[11px] text-muted-foreground">
                         Authenticated verification events
@@ -103,7 +108,7 @@ export default function DashboardOverviewPage() {
                         <AlertTriangle className="w-4 h-4 text-destructive" />
                     </div>
                     <div className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-destructive">
-                        {fakeCount}
+                        {error ? "Unavailable" : fakeCount}
                     </div>
                     <p className="text-[11px] text-destructive/90 font-medium">
                         {totalScans > 0 ? `${Math.round((fakeCount / totalScans) * 100)}% manipulation rate` : "0% manipulation rate"}
@@ -116,7 +121,7 @@ export default function DashboardOverviewPage() {
                         <CheckCircle2 className="w-4 h-4 text-green-600" />
                     </div>
                     <div className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-green-600">
-                        {realCount}
+                        {error ? "Unavailable" : realCount}
                     </div>
                     <p className="text-[11px] text-green-600/90 font-medium">
                         {totalScans > 0 ? `${Math.round((realCount / totalScans) * 100)}% camera frames` : "0% genuine frames"}
@@ -129,10 +134,10 @@ export default function DashboardOverviewPage() {
                         <Activity className="w-4 h-4 text-primary" />
                     </div>
                     <div className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-foreground">
-                        {avgConfidence}%
+                        {error ? "Unavailable" : `${avgConfidence}%`}
                     </div>
                     <p className="text-[11px] text-muted-foreground">
-                        Average model calibration score
+                        Average model confidence score
                     </p>
                 </div>
             </div>
@@ -146,15 +151,37 @@ export default function DashboardOverviewPage() {
                             <History className="w-4 h-4 text-primary" />
                             <span>Recent Forensic Verifications</span>
                         </h2>
-                        {totalScans > 0 && (
+                        {totalScans > 0 && !error && (
                             <Link href="/history" className="text-xs font-semibold text-primary hover:underline flex items-center gap-1">
-                                <span>View Ledger</span>
+                                <span>View History</span>
                                 <ArrowRight className="w-3.5 h-3.5" />
                             </Link>
                         )}
                     </div>
 
-                    {totalScans > 0 ? (
+                    {error && !loading ? (
+                        <div className="p-8 sm:p-12 rounded-3xl bg-destructive/10 border border-destructive/20 text-center space-y-4 shadow-sm">
+                            <div className="w-16 h-16 rounded-full bg-destructive/20 text-destructive flex items-center justify-center mx-auto">
+                                <HardDrive className="w-8 h-8" />
+                            </div>
+                            <div className="space-y-1">
+                                <h3 className="text-base font-bold text-foreground">
+                                    Failed to Load Scan History
+                                </h3>
+                                <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto">
+                                    {error}
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={loadData}
+                                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-foreground text-background text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-all shadow-sm"
+                            >
+                                <RefreshCw className="w-3.5 h-3.5" />
+                                <span>Retry Connection</span>
+                            </button>
+                        </div>
+                    ) : totalScans > 0 ? (
                         <div className="bg-card border border-border rounded-3xl divide-y divide-border/60 overflow-hidden shadow-sm">
                             {history.slice(0, 5).map((row) => {
                                 const isFake = row.resultLabel?.toLowerCase() === "fake";
@@ -183,13 +210,13 @@ export default function DashboardOverviewPage() {
                                         <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
                                             <ResultBadge status={status} size="sm" />
                                             <span className="font-mono text-xs font-bold text-foreground">
-                                                {row.confidenceScore?.toFixed(1) || 0}%
+                                                {row.confidenceScore != null ? `${row.confidenceScore.toFixed(1)}%` : "N/A"}
                                             </span>
                                             <Link
                                                 href={`/report/${row.scanId}`}
                                                 className="px-3 py-1.5 rounded-xl bg-muted hover:bg-muted/80 text-foreground text-xs font-semibold transition-colors flex items-center gap-1"
                                             >
-                                                <span>Certificate</span>
+                                                <span>Report</span>
                                                 <ArrowRight className="w-3 h-3" />
                                             </Link>
                                         </div>

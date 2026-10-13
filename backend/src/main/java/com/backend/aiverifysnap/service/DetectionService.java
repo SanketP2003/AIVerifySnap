@@ -20,6 +20,9 @@ import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import java.security.MessageDigest;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
@@ -85,7 +88,8 @@ public class DetectionService {
             }
 
             long elapsed = System.currentTimeMillis() - startTime;
-            return transformMlResponse(response, elapsed);
+            String sha256 = calculateSha256(file);
+            return transformMlResponse(response, elapsed, sha256);
         } catch (WebClientResponseException wcre) {
             String body = null;
             try {
@@ -110,8 +114,28 @@ public class DetectionService {
         }
     }
 
+    public String calculateSha256(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return "Unavailable";
+        }
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(file.getBytes());
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (Exception e) {
+            log.warn("Failed to compute SHA-256 for file: {}", e.getMessage());
+            return "Unavailable";
+        }
+    }
+
     @SuppressWarnings("unchecked")
-    private Map<String, Object> transformMlResponse(Map<String, Object> mlResponse, long elapsedMs) {
+    private Map<String, Object> transformMlResponse(Map<String, Object> mlResponse, long elapsedMs, String sha256) {
         Map<String, Object> result = new HashMap<>();
         String verdict = mlResponse.getOrDefault("verdict", "Unknown").toString();
         result.put("prediction", verdict);
@@ -143,6 +167,7 @@ public class DetectionService {
         result.put("model_status", "SigLIP Deepfake Detector (94.4% acc)");
         Map<String, Object> details = new HashMap<>();
         details.put("raw_output", rawOutput);
+        details.put("sha256", sha256);
         Object elaData = mlResponse.get("ela");
         if (elaData instanceof Map) {
             Map<String, Object> ela = (Map<String, Object>) elaData;
@@ -219,23 +244,52 @@ public class DetectionService {
 
     public List<DetectionHistory> getUserDetections(Long userId) {
         if (userId == null) {
-            return detectionRepository.findAll();
+            return List.of();
         }
         Users user = userRepository.findById(userId).orElse(null);
         if (user != null && "STARTER".equalsIgnoreCase(user.getPlan())) {
             LocalDateTime cutoff = LocalDateTime.now().minusDays(7);
-            return detectionRepository.findByScanTimestampAfterOrderByScanTimestampDesc(cutoff);
+            return detectionRepository.findByUserIdAndScanTimestampAfterOrderByScanTimestampDesc(userId, cutoff);
         }
         return detectionRepository.findByUserIdOrderByScanTimestampDesc(userId);
     }
 
+    public DetectionHistory getDetectionById(Long scanId, Long requestingUserId) {
+        DetectionHistory detection = detectionRepository.findById(scanId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Detection not found with id: " + scanId));
+        if (requestingUserId != null && detection.getUser() != null) {
+            Long ownerId = detection.getUser().getId();
+            if (!ownerId.equals(requestingUserId)) {
+                Users requester = userRepository.findById(requestingUserId).orElse(null);
+                if (requester == null || !"ADMIN".equalsIgnoreCase(requester.getRole())) {
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied: Unauthorized access to scan record");
+                }
+            }
+        }
+        return detection;
+    }
+
     public DetectionHistory getDetectionById(Long scanId) {
-        return detectionRepository.findById(scanId)
-                .orElseThrow(() -> new RuntimeException("Detection not found with id: " + scanId));
+        return getDetectionById(scanId, null);
+    }
+
+    public void deleteDetection(Long scanId, Long requestingUserId) {
+        DetectionHistory detection = detectionRepository.findById(scanId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Detection not found with id: " + scanId));
+        if (requestingUserId != null && detection.getUser() != null) {
+            Long ownerId = detection.getUser().getId();
+            if (!ownerId.equals(requestingUserId)) {
+                Users requester = userRepository.findById(requestingUserId).orElse(null);
+                if (requester == null || !"ADMIN".equalsIgnoreCase(requester.getRole())) {
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied: Unauthorized to delete scan record");
+                }
+            }
+        }
+        detectionRepository.deleteById(scanId);
     }
 
     public void deleteDetection(Long scanId) {
-        detectionRepository.deleteById(scanId);
+        deleteDetection(scanId, null);
     }
 
     public Map<String, Object> detectBulkDeepfake(MultipartFile[] files, Long userId) {
@@ -301,42 +355,12 @@ public class DetectionService {
                     .timeout(Duration.ofSeconds(timeout))
                     .block();
         } catch (Exception e) {
-            log.warn("ML reverse-search call failed: {}, returning structured fallback", e.getMessage());
+            log.warn("ML reverse-search call failed: {}", e.getMessage());
             Map<String, Object> fallback = new HashMap<>();
             fallback.put("filename", file.getOriginalFilename());
-            fallback.put("search_engine", "Google Lens (Neural Visual Matching)");
-            fallback.put("reverse_matches_count", 3);
-            fallback.put("knowledge_graph", Map.of(
-                    "title", "Digital Media Verification Asset",
-                    "subtitle", "Perceptual Visual Clustering",
-                    "description", "Cross-referenced against verified internet media indices, social repositories, and synthetic archives."
-            ));
-            fallback.put("visual_matches", List.of(
-                    Map.of(
-                            "title", "Media Archive Verification Wire",
-                            "link", "https://reuters.com/fact-check",
-                            "source", "Reuters Fact Check Wire",
-                            "thumbnail", "https://images.unsplash.com/photo-1544365558-35aa4afcf11f?w=200&q=80",
-                            "similarity_score", 94.2,
-                            "match_type", "Visual Fingerprint"
-                    ),
-                    Map.of(
-                            "title", "Public Media Imageboard Thread",
-                            "link", "https://reddit.com/r/technology",
-                            "source", "Reddit Archive",
-                            "thumbnail", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80",
-                            "similarity_score", 87.5,
-                            "match_type", "Derivative Match"
-                    ),
-                    Map.of(
-                            "title", "Digital Identity & Visual Graph Archive",
-                            "link", "https://x.com/verified-media",
-                            "source", "X (Twitter) Visual Graph",
-                            "thumbnail", "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80",
-                            "similarity_score", 81.0,
-                            "match_type", "Derivative Match"
-                    )
-            ));
+            fallback.put("error", "Visual reverse search service is currently unavailable");
+            fallback.put("reverse_matches_count", 0);
+            fallback.put("visual_matches", List.of());
             return fallback;
         }
     }
@@ -344,65 +368,21 @@ public class DetectionService {
     public Map<String, Object> identityProtectionScan(MultipartFile file, Long userId) {
         Map<String, Object> detection = detectDeepfake(file);
         String filename = file.getOriginalFilename() != null ? file.getOriginalFilename() : "portrait.jpg";
-        String sha256 = "SHA256-" + Integer.toHexString(filename.hashCode()) + System.currentTimeMillis();
+        String sha256 = calculateSha256(file);
 
         Map<String, Object> result = new HashMap<>();
         result.put("filename", filename);
         result.put("biometric_hash", sha256);
         result.put("timestamp", LocalDateTime.now().toString());
-
-        double riskScore = 84.6;
-        String threatLevel = "ELEVATED";
-
-        List<Map<String, Object>> detectedMatches = List.of(
-                Map.of(
-                        "platform", "Reddit (r/deepfakes_archive)",
-                        "url", "https://reddit.com/r/technology/post/94821",
-                        "match_type", "Synthetic Face-Swap Clone",
-                        "similarity_score", 92.4,
-                        "date_spotted", "3 days ago",
-                        "status", "Active",
-                        "infringement_risk", "High"
-                ),
-                Map.of(
-                        "platform", "Telegram Channel (@ai_synthetic_faces)",
-                        "url", "https://t.me/media_archive/9042",
-                        "match_type", "Unauthorized AI Avatar Generator",
-                        "similarity_score", 88.1,
-                        "date_spotted", "1 week ago",
-                        "status", "Active",
-                        "infringement_risk", "High"
-                ),
-                Map.of(
-                        "platform", "X (Twitter) Media Index",
-                        "url", "https://x.com/synthetic_monitor/status/8841",
-                        "match_type", "Derivative Portrait Derivative",
-                        "similarity_score", 76.5,
-                        "date_spotted", "2 weeks ago",
-                        "status", "Under Review",
-                        "infringement_risk", "Medium"
-                )
-        );
-
-        result.put("infringement_risk_score", riskScore);
-        result.put("threat_level", threatLevel);
-        result.put("total_infringements_found", detectedMatches.size());
-        result.put("detected_matches", detectedMatches);
-        result.put("takedown_eligible", true);
         result.put("detection_analysis", detection);
 
-        String dmcaNoticeTemplate =
-                "DIGITAL MILLENNIUM COPYRIGHT ACT (DMCA) TAKEDOWN NOTICE\n" +
-                "To: Designated Copyright Agent / Abuse Department\n" +
-                "Date: " + java.time.LocalDate.now() + "\n\n" +
-                "I am submitting this notice to request the expeditious removal of unauthorized synthetic material using my biometric likeness.\n\n" +
-                "Infringing URLs:\n" +
-                "1. https://reddit.com/r/technology/post/94821\n" +
-                "2. https://t.me/media_archive/9042\n\n" +
-                "I have a good faith belief that use of the material in the manner complained of is not authorized by the copyright owner, its agent, or the law.\n" +
-                "Digital Biometric Hash: " + sha256 + "\n" +
-                "Issued via AIVerifySnap Digital Likeness Protection Engine.";
-        result.put("dmca_notice_template", dmcaNoticeTemplate);
+        // Truthful operational results: No fabricated matches or fake threat reports
+        result.put("infringement_risk_score", 0.0);
+        result.put("threat_level", "NOMINAL");
+        result.put("total_infringements_found", 0);
+        result.put("detected_matches", List.of());
+        result.put("takedown_eligible", false);
+        result.put("dmca_notice_template", "");
 
         return result;
     }

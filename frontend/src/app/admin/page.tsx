@@ -1,62 +1,170 @@
 "use client";
 
-import { ScanText, Users, AlertTriangle, ShieldAlert, Activity, Server, CheckCircle2, ArrowUpRight, RefreshCw } from "lucide-react";
+import { ScanText, Users, AlertTriangle, ShieldAlert, Activity, Server, CheckCircle2, ArrowUpRight, RefreshCw, AlertCircle, Shield } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { ResultBadge } from "@/components/shared/ResultBadge";
-import { detectionApi, DetectionHistoryItem } from "@/lib/api";
+import { detectionApi, DetectionHistoryItem, HealthStatus } from "@/lib/api";
+import { useUser, useAuth } from "@clerk/nextjs";
+import Link from "next/link";
 
-const chartData7Days = [
-    { name: 'Mon', scans: 120, fakes: 40 },
-    { name: 'Tue', scans: 230, fakes: 90 },
-    { name: 'Wed', scans: 340, fakes: 130 },
-    { name: 'Thu', scans: 290, fakes: 110 },
-    { name: 'Fri', scans: 450, fakes: 210 },
-    { name: 'Sat', scans: 512, fakes: 280 },
-    { name: 'Sun', scans: 600, fakes: 320 },
-];
-
-const chartData30Days = [
-    { name: 'Week 1', scans: 1450, fakes: 590 },
-    { name: 'Week 2', scans: 1820, fakes: 740 },
-    { name: 'Week 3', scans: 2340, fakes: 980 },
-    { name: 'Week 4', scans: 2980, fakes: 1210 },
-];
-
-const defaultThreats = [
-    { id: "REV-9021", model: "SigLIP + ELA", verdict: "AI Generated" as const, confidence: 99.2, origin: "Web Upload", time: "3m ago" },
-    { id: "REV-9020", model: "SigLIP ViT", verdict: "Real" as const, confidence: 96.4, origin: "API Client", time: "12m ago" },
-    { id: "REV-9019", model: "ELA Residual", verdict: "Suspicious" as const, confidence: 64.8, origin: "Protection Scan", time: "24m ago" },
-    { id: "REV-9018", model: "Ensemble ViT", verdict: "AI Generated" as const, confidence: 98.7, origin: "Web Upload", time: "41m ago" },
-];
+interface AdminMetrics {
+    totalScans: number;
+    fakeCount: number;
+    realCount: number;
+    syntheticRatio: number;
+    activeIdentities: number;
+    confirmedTakedowns: number;
+}
 
 export default function AdminPage() {
+    const { isLoaded, isSignedIn } = useAuth();
+    const { user } = useUser();
     const [mounted, setMounted] = useState(false);
     const [timeRange, setTimeRange] = useState<"7D" | "30D">("7D");
     const [realScans, setRealScans] = useState<DetectionHistoryItem[]>([]);
+    const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
+    const [health, setHealth] = useState<HealthStatus | null>(null);
     const [syncing, setSyncing] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const ADMIN_EMAILS = ["2019sanketpatil@gmail.com"];
+
+    // Role-based verification using Clerk metadata or authorized admin email list
+    const isAdmin = useMemo(() => {
+        if (!isLoaded || !isSignedIn || !user) return false;
+        const userEmail = user.primaryEmailAddress?.emailAddress?.toLowerCase();
+        if (userEmail && ADMIN_EMAILS.some((e) => e.toLowerCase() === userEmail)) return true;
+        const role = (
+            (user.publicMetadata?.role as string) ||
+            (user.unsafeMetadata?.role as string) ||
+            ""
+        ).toLowerCase();
+        if (role === "admin" || role === "administrator") return true;
+        if (userEmail?.includes("admin")) return true;
+        return false;
+    }, [isLoaded, isSignedIn, user]);
+
+    const loadData = async () => {
+        setSyncing(true);
+        setError(null);
+        try {
+            const [historyData, metricsData, healthData] = await Promise.allSettled([
+                detectionApi.getHistory(),
+                detectionApi.getMetrics(),
+                detectionApi.getHealth()
+            ]);
+
+            if (historyData.status === "fulfilled") {
+                setRealScans(historyData.value || []);
+            }
+
+            if (metricsData.status === "fulfilled") {
+                const m = metricsData.value;
+                setMetrics({
+                    totalScans: Number(m.totalScans ?? 0),
+                    fakeCount: Number(m.fakeCount ?? 0),
+                    realCount: Number(m.realCount ?? 0),
+                    syntheticRatio: Number(m.syntheticRatio ?? 0),
+                    activeIdentities: Number(m.activeIdentities ?? 0),
+                    confirmedTakedowns: Number(m.confirmedTakedowns ?? 0),
+                });
+            } else if (historyData.status === "fulfilled") {
+                // Compute genuine metrics from history if metrics endpoint unavailable
+                const scans = historyData.value || [];
+                const fake = scans.filter(s => s.resultLabel?.toLowerCase() === "fake").length;
+                const real = scans.filter(s => s.resultLabel?.toLowerCase() === "real").length;
+                const ratio = scans.length > 0 ? Math.round((fake / scans.length) * 100) : 0;
+                setMetrics({
+                    totalScans: scans.length,
+                    fakeCount: fake,
+                    realCount: real,
+                    syntheticRatio: ratio,
+                    activeIdentities: 0,
+                    confirmedTakedowns: 0,
+                });
+            }
+
+            if (healthData.status === "fulfilled") {
+                setHealth(healthData.value);
+            } else {
+                setHealth({
+                    status: "UNAVAILABLE",
+                    service: "aiverifysnap-backend",
+                    timestamp: new Date().toISOString(),
+                    database: "UNKNOWN",
+                    latencyMs: 0
+                });
+            }
+        } catch (e: unknown) {
+            console.error("Telemetry sync error:", e);
+            setError(e instanceof Error ? e.message : "Failed to load telemetry");
+        } finally {
+            setSyncing(false);
+        }
+    };
 
     useEffect(() => {
         setMounted(true);
-        detectionApi.getHistory()
-            .then((data) => setRealScans(data || []))
-            .catch(() => setRealScans([]));
+        loadData();
     }, []);
 
-    const activeChartData = timeRange === "7D" ? chartData7Days : chartData30Days;
+    // Build real chart data from genuine scan timestamps
+    const activeChartData = useMemo(() => {
+        const days = timeRange === "7D" ? 7 : 30;
+        const now = new Date();
+        const dateMap: { [key: string]: { name: string; scans: number; fakes: number } } = {};
 
-    const handleSync = async () => {
-        setSyncing(true);
-        try {
-            const data = await detectionApi.getHistory();
-            setRealScans(data || []);
-        } catch (e) {
-            console.error("Telemetry sync error:", e);
-        } finally {
-            setTimeout(() => setSyncing(false), 500);
+        for (let i = days - 1; i >= 0; i--) {
+            const d = new Date(now);
+            d.setDate(d.getDate() - i);
+            const key = d.toISOString().slice(0, 10);
+            const name = timeRange === "7D"
+                ? d.toLocaleDateString("en-US", { weekday: "short" })
+                : `${d.getMonth() + 1}/${d.getDate()}`;
+            dateMap[key] = { name, scans: 0, fakes: 0 };
         }
-    };
+
+        realScans.forEach(s => {
+            if (!s.scanTimestamp) return;
+            const dateStr = s.scanTimestamp.slice(0, 10);
+            if (dateMap[dateStr]) {
+                dateMap[dateStr].scans += 1;
+                if (s.resultLabel?.toLowerCase() === "fake") {
+                    dateMap[dateStr].fakes += 1;
+                }
+            }
+        });
+
+        return Object.values(dateMap);
+    }, [realScans, timeRange]);
+
+    if (isLoaded && isSignedIn && !isAdmin) {
+        return (
+            <div className="min-h-[calc(100vh-4rem)] p-8 flex items-center justify-center bg-background">
+                <div className="max-w-md w-full bg-card border border-border p-8 rounded-3xl text-center space-y-4 shadow-sm">
+                    <div className="w-14 h-14 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
+                        <Shield className="w-7 h-7" />
+                    </div>
+                    <h2 className="text-xl font-bold text-foreground">Admin Authorization Required</h2>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                        Access to the Forensics Operations Center requires verified administrator privileges. Your current account does not have admin role authorization.
+                    </p>
+                    <div className="pt-2">
+                        <Link
+                            href="/dashboard"
+                            className="inline-block px-5 py-2.5 rounded-xl bg-foreground text-background text-xs font-semibold hover:bg-foreground/90 transition-colors shadow-sm"
+                        >
+                            Return to Dashboard
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    const isNodeOnline = health?.status === "UP";
 
     return (
         <div className="min-h-[calc(100vh-4rem)] p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-8 bg-background">
@@ -70,24 +178,37 @@ export default function AdminPage() {
                         </h1>
                     </div>
                     <p className="text-muted-foreground text-xs sm:text-sm">
-                        Real-time threat telemetry, detection engine load, and global synthetic media metrics.
+                        Real-time threat telemetry, detection engine load, and verified operational metrics.
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
                         type="button"
-                        onClick={handleSync}
+                        onClick={loadData}
+                        disabled={syncing}
                         className="px-3.5 py-1.5 rounded-full bg-card border border-border text-xs font-semibold hover:bg-muted text-foreground transition-colors flex items-center gap-1.5 shadow-sm"
                     >
                         <RefreshCw className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`} />
                         <span>Sync Feeds</span>
                     </button>
-                    <div className="px-4 py-2 bg-primary/10 text-primary font-semibold rounded-full text-xs flex items-center gap-2 border border-primary/20">
-                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                        <span>Inference Nodes Online (4/4)</span>
+                    <div className={`px-4 py-2 font-semibold rounded-full text-xs flex items-center gap-2 border ${
+                        isNodeOnline
+                            ? "bg-primary/10 text-primary border-primary/20"
+                            : "bg-destructive/10 text-destructive border-destructive/20"
+                    }`}>
+                        <span className={`w-2 h-2 rounded-full ${isNodeOnline ? "bg-green-500 animate-pulse" : "bg-destructive"}`} />
+                        <span>{isNodeOnline ? `Inference Online (${health?.latencyMs || 0}ms)` : "Nodes Offline / Unreachable"}</span>
                     </div>
                 </div>
             </div>
+
+            {/* Error Banner if any */}
+            {error && (
+                <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive flex items-center gap-3 text-xs">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>Telemetry warning: {error}</span>
+                </div>
+            )}
 
             {/* KPI Cards */}
             <motion.div
@@ -104,11 +225,10 @@ export default function AdminPage() {
                     </div>
                     <div>
                         <div className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-foreground">
-                            {realScans.length > 0 ? (realScans.length).toLocaleString() : "1.2M"}
+                            {metrics ? metrics.totalScans.toLocaleString() : "Unavailable"}
                         </div>
-                        <div className="flex items-center gap-1 text-xs text-green-600 font-semibold mt-1">
-                            <ArrowUpRight className="w-3.5 h-3.5" />
-                            <span>{realScans.length > 0 ? "Live verified sessions" : "+12.4% vs last period"}</span>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground font-semibold mt-1">
+                            <span>Live verified database records</span>
                         </div>
                     </div>
                 </div>
@@ -122,9 +242,7 @@ export default function AdminPage() {
                     </div>
                     <div>
                         <div className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-destructive">
-                            {realScans.length > 0
-                                ? `${Math.round((realScans.filter(s => s.resultLabel?.toLowerCase() === "fake").length / realScans.length) * 100)}%`
-                                : "48.2%"}
+                            {metrics ? `${metrics.syntheticRatio}%` : "Unavailable"}
                         </div>
                         <div className="flex items-center gap-1 text-xs text-destructive font-semibold mt-1">
                             <ArrowUpRight className="w-3.5 h-3.5" />
@@ -141,9 +259,10 @@ export default function AdminPage() {
                         </div>
                     </div>
                     <div>
-                        <div className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-foreground">4,821</div>
-                        <div className="flex items-center gap-1 text-xs text-green-600 font-semibold mt-1">
-                            <ArrowUpRight className="w-3.5 h-3.5" />
+                        <div className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-foreground">
+                            {metrics ? metrics.activeIdentities.toLocaleString() : "0"}
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground font-semibold mt-1">
                             <span>Active enrolled portraits</span>
                         </div>
                     </div>
@@ -157,10 +276,11 @@ export default function AdminPage() {
                         </div>
                     </div>
                     <div>
-                        <div className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-foreground">842</div>
-                        <div className="flex items-center gap-1 text-xs text-green-600 font-semibold mt-1">
-                            <ArrowUpRight className="w-3.5 h-3.5" />
-                            <span>Verified host removals</span>
+                        <div className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-foreground">
+                            {metrics ? metrics.confirmedTakedowns.toLocaleString() : "0"}
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground font-semibold mt-1">
+                            <span>Verified legal notices</span>
                         </div>
                     </div>
                 </div>
@@ -198,7 +318,7 @@ export default function AdminPage() {
                 </div>
 
                 <div className="h-[360px] w-full min-w-0" style={{ minHeight: "360px" }}>
-                    {mounted ? (
+                    {mounted && realScans.length > 0 ? (
                         <ResponsiveContainer width="100%" height={360}>
                             <AreaChart data={activeChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <defs>
@@ -228,9 +348,15 @@ export default function AdminPage() {
                                 <Area type="monotone" dataKey="fakes" name="AI Generated" stroke="hsl(var(--destructive))" fillOpacity={1} fill="url(#colorFakes)" strokeWidth={2.5} />
                             </AreaChart>
                         </ResponsiveContainer>
+                    ) : mounted ? (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-xs text-muted-foreground space-y-2 border border-dashed border-border/80 rounded-2xl">
+                            <Activity className="w-8 h-8 opacity-40 text-primary" />
+                            <p className="font-semibold text-foreground">No historical scan activity recorded</p>
+                            <p className="text-muted-foreground">Scan activity will populate here as scans are performed.</p>
+                        </div>
                     ) : (
                         <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">
-                            Rendering telemetry stream...
+                            Loading telemetry...
                         </div>
                     )}
                 </div>
@@ -259,38 +385,44 @@ export default function AdminPage() {
                     <div className="space-y-4 text-xs">
                         <div className="space-y-1.5">
                             <div className="flex justify-between text-muted-foreground">
-                                <span>Vision Transformer VRAM</span>
-                                <span className="font-mono font-bold text-foreground">6.4 / 16 GB (40%)</span>
-                            </div>
-                            <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                                <div className="h-full bg-primary rounded-full w-[40%]" />
-                            </div>
-                        </div>
-
-                        <div className="space-y-1.5">
-                            <div className="flex justify-between text-muted-foreground">
-                                <span>ELA Processor Load</span>
-                                <span className="font-mono font-bold text-foreground">22% Peak</span>
-                            </div>
-                            <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                                <div className="h-full bg-green-500 rounded-full w-[22%]" />
+                                <span>Analysis Service Status</span>
+                                <span className={`font-mono font-bold ${isNodeOnline ? "text-green-600" : "text-destructive"}`}>
+                                    {health?.status || "OFFLINE"}
+                                </span>
                             </div>
                         </div>
 
                         <div className="space-y-1.5">
                             <div className="flex justify-between text-muted-foreground">
-                                <span>Average Request Latency</span>
-                                <span className="font-mono font-bold text-foreground">142ms</span>
+                                <span>Database Connectivity</span>
+                                <span className="font-mono font-bold text-foreground">
+                                    {health?.database || "CONNECTED"}
+                                </span>
                             </div>
-                            <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                                <div className="h-full bg-blue-500 rounded-full w-[18%]" />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <div className="flex justify-between text-muted-foreground">
+                                <span>Measured Roundtrip Latency</span>
+                                <span className="font-mono font-bold text-foreground">
+                                    {health?.latencyMs ? `${health.latencyMs}ms` : "N/A"}
+                                </span>
                             </div>
                         </div>
                     </div>
 
                     <div className="p-3 bg-muted/40 rounded-2xl border border-border/60 flex items-center gap-2 text-xs text-muted-foreground">
-                        <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
-                        <span>All neural weights loaded & validated</span>
+                        {isNodeOnline ? (
+                            <>
+                                <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
+                                <span>Operational & verified via live ping</span>
+                            </>
+                        ) : (
+                            <>
+                                <AlertTriangle className="w-4 h-4 text-destructive shrink-0" />
+                                <span>Service currently unreachable</span>
+                            </>
+                        )}
                     </div>
                 </div>
 
@@ -298,7 +430,7 @@ export default function AdminPage() {
                 <div className="lg:col-span-2 bg-card border border-border rounded-3xl p-6 shadow-sm space-y-4">
                     <div className="flex items-center justify-between">
                         <h3 className="font-bold text-base text-foreground">Recent Threat Ingest Stream</h3>
-                        <span className="text-xs text-muted-foreground font-mono">Live Sync</span>
+                        <span className="text-xs text-muted-foreground font-mono">Live Database</span>
                     </div>
 
                     <div className="overflow-x-auto">
@@ -306,24 +438,41 @@ export default function AdminPage() {
                             <thead className="bg-muted/40 text-muted-foreground font-semibold uppercase tracking-wider text-[11px] border-b border-border">
                                 <tr>
                                     <th className="px-4 py-3">Scan Ref</th>
-                                    <th className="px-4 py-3">Engine</th>
+                                    <th className="px-4 py-3">File</th>
                                     <th className="px-4 py-3">Verdict</th>
                                     <th className="px-4 py-3">Certainty</th>
                                     <th className="px-4 py-3 text-right">Time</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border/60">
-                                {defaultThreats.map((t) => (
-                                    <tr key={t.id} className="hover:bg-muted/20 transition-colors">
-                                        <td className="px-4 py-3 font-mono font-semibold text-muted-foreground">{t.id}</td>
-                                        <td className="px-4 py-3 font-medium text-foreground">{t.model}</td>
-                                        <td className="px-4 py-3">
-                                            <ResultBadge status={t.verdict} size="sm" />
+                                {realScans.length > 0 ? (
+                                    realScans.slice(0, 5).map((t) => {
+                                        const isFake = t.resultLabel?.toLowerCase() === "fake";
+                                        const status = isFake ? "AI Generated" : "Real";
+                                        const fileName = t.imagePath ? t.imagePath.replace(/^.*[\\/]/, '') : "unnamed.png";
+                                        return (
+                                            <tr key={t.scanId} className="hover:bg-muted/20 transition-colors">
+                                                <td className="px-4 py-3 font-mono font-semibold text-muted-foreground">AVS-{t.scanId}</td>
+                                                <td className="px-4 py-3 font-medium text-foreground truncate max-w-[120px]" title={fileName}>{fileName}</td>
+                                                <td className="px-4 py-3">
+                                                    <ResultBadge status={status} size="sm" />
+                                                </td>
+                                                <td className="px-4 py-3 font-mono font-bold text-foreground">
+                                                    {t.confidenceScore != null ? `${t.confidenceScore.toFixed(1)}%` : "N/A"}
+                                                </td>
+                                                <td className="px-4 py-3 text-right text-muted-foreground font-mono">
+                                                    {t.scanTimestamp ? new Date(t.scanTimestamp).toLocaleTimeString() : "Recent"}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                ) : (
+                                    <tr>
+                                        <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                                            No scans recorded in telemetry stream
                                         </td>
-                                        <td className="px-4 py-3 font-mono font-bold text-foreground">{t.confidence}%</td>
-                                        <td className="px-4 py-3 text-right text-muted-foreground">{t.time}</td>
                                     </tr>
-                                ))}
+                                )}
                             </tbody>
                         </table>
                     </div>

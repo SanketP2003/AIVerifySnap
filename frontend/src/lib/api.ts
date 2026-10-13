@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8080');
 
 const api = axios.create({
     baseURL: API_BASE_URL,
@@ -17,6 +17,7 @@ export interface DetectionResult {
     model_status: string;
     details: {
         raw_output?: Array<{ label: string; score: number }>;
+        sha256?: string;
         ela_mean?: number;
         ela_std?: number;
         ela_max?: number;
@@ -48,14 +49,15 @@ export interface ReverseSearchResult {
     filename: string;
     search_engine: string;
     visual_matches: ReverseSearchVisualMatch[];
-    knowledge_graph: {
+    knowledge_graph?: {
         title: string;
         subtitle: string;
         description: string;
         perceptual_hash?: string;
     };
     reverse_matches_count: number;
-    processing_time_ms: number;
+    processing_time_ms?: number;
+    error?: string;
 }
 
 export interface IdentityProtectionMatch {
@@ -77,8 +79,9 @@ export interface IdentityProtectionResult {
     total_infringements_found: number;
     detected_matches: IdentityProtectionMatch[];
     takedown_eligible: boolean;
-    dmca_notice_template: string;
+    dmca_notice_template?: string;
     detection_analysis?: DetectionResult;
+    error?: string;
 }
 
 export interface DetectionHistoryItem {
@@ -91,6 +94,24 @@ export interface DetectionHistoryItem {
     user: { id: number; name: string; email: string; plan?: string } | null;
 }
 
+export interface HealthStatus {
+    status: string;
+    service: string;
+    timestamp?: string;
+    database?: string;
+    latencyMs?: number;
+    mlService?: string;
+}
+
+export interface SystemMetrics {
+    totalScans: number;
+    fakeCount: number;
+    realCount: number;
+    syntheticRatio: number;
+    activeIdentities: number;
+    confirmedTakedowns: number;
+}
+
 export interface UserQuota {
     plan: 'STARTER' | 'PROFESSIONAL' | 'ENTERPRISE';
     scansToday: number;
@@ -101,13 +122,14 @@ export interface UserQuota {
     identityProtectionAllowed: boolean;
     pdfExportAllowed: boolean;
     apiAccessAllowed?: boolean;
+    quotaUnavailable?: boolean;
 }
 
-// Client-side stored plan helper for interactive testing & active user tier
+// Client-side stored plan helper for display preferences only; entitlements enforced on server
 export const planStorage = {
     getPlan: (): 'STARTER' | 'PROFESSIONAL' | 'ENTERPRISE' => {
-        if (typeof window === 'undefined') return 'PROFESSIONAL';
-        return (localStorage.getItem('avs_user_plan') as 'STARTER' | 'PROFESSIONAL' | 'ENTERPRISE') || 'PROFESSIONAL';
+        if (typeof window === 'undefined') return 'STARTER';
+        return (localStorage.getItem('avs_user_plan') as 'STARTER' | 'PROFESSIONAL' | 'ENTERPRISE') || 'STARTER';
     },
     setPlan: (plan: 'STARTER' | 'PROFESSIONAL' | 'ENTERPRISE') => {
         if (typeof window !== 'undefined') {
@@ -169,13 +191,25 @@ export const detectionApi = {
         return response.data;
     },
 
-    getReport: async (id: string): Promise<DetectionHistoryItem> => {
-        const response = await api.get(`/detection/history/${id}`);
+    getReport: async (id: string, userId?: number): Promise<DetectionHistoryItem> => {
+        const url = userId ? `/detection/history/${id}?userId=${userId}` : `/detection/history/${id}`;
+        const response = await api.get(url);
         return response.data;
     },
 
-    deleteHistoryItem: async (id: number): Promise<{ message: string; scanId: string }> => {
-        const response = await api.delete(`/detection/history/${id}`);
+    deleteHistoryItem: async (id: number, userId?: number): Promise<{ message: string; scanId: string }> => {
+        const url = userId ? `/detection/history/${id}?userId=${userId}` : `/detection/history/${id}`;
+        const response = await api.delete(url);
+        return response.data;
+    },
+
+    getMetrics: async (): Promise<SystemMetrics> => {
+        const response = await api.get('/detection/metrics');
+        return response.data;
+    },
+
+    getHealth: async (): Promise<HealthStatus> => {
+        const response = await api.get('/detection/health');
         return response.data;
     },
 
@@ -195,9 +229,9 @@ export const detectionApi = {
     },
 
     updateUserPlan: async (identifier: string, plan: 'STARTER' | 'PROFESSIONAL' | 'ENTERPRISE') => {
-        planStorage.setPlan(plan);
         try {
-            const response = await api.put(`/api/users/${identifier}/plan`, { plan });
+            const response = await api.put(`/api/users/${encodeURIComponent(identifier)}/plan`, { plan });
+            planStorage.setPlan(plan);
             return response.data;
         } catch {
             return { plan };
@@ -205,22 +239,37 @@ export const detectionApi = {
     },
 
     getUserQuota: async (identifier: string): Promise<UserQuota> => {
+        if (!identifier) {
+            return {
+                plan: 'STARTER',
+                scansToday: 0,
+                dailyLimit: 10,
+                remainingToday: 10,
+                historyDaysLimit: 7,
+                bulkLimit: 1,
+                identityProtectionAllowed: false,
+                pdfExportAllowed: false,
+                apiAccessAllowed: false,
+            };
+        }
         try {
-            const response = await api.get(`/api/users/${identifier}/quota`);
+            const response = await api.get(`/api/users/${encodeURIComponent(identifier)}/quota`);
+            if (response.data && response.data.plan) {
+                planStorage.setPlan(response.data.plan);
+            }
             return response.data;
         } catch {
-            // Local fallback based on stored plan
-            const activePlan = planStorage.getPlan();
             return {
-                plan: activePlan,
-                scansToday: 2,
-                dailyLimit: activePlan === 'STARTER' ? 10 : -1,
-                remainingToday: activePlan === 'STARTER' ? 8 : 'Unlimited',
-                historyDaysLimit: activePlan === 'STARTER' ? 7 : -1,
-                bulkLimit: activePlan === 'STARTER' ? 1 : activePlan === 'PROFESSIONAL' ? 50 : -1,
-                identityProtectionAllowed: activePlan !== 'STARTER',
-                pdfExportAllowed: activePlan !== 'STARTER',
-                apiAccessAllowed: activePlan === 'ENTERPRISE'
+                plan: 'STARTER',
+                scansToday: 0,
+                dailyLimit: 10,
+                remainingToday: 'Unavailable',
+                historyDaysLimit: 7,
+                bulkLimit: 1,
+                identityProtectionAllowed: false,
+                pdfExportAllowed: false,
+                apiAccessAllowed: false,
+                quotaUnavailable: true,
             };
         }
     },

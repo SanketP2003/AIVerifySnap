@@ -25,9 +25,21 @@ public class UserService {
         return convertToDto(user);
     }
 
+    private boolean isAdminEmail(String email) {
+        return email != null && "2019sanketpatil@gmail.com".equalsIgnoreCase(email.trim());
+    }
+
     public Users registerUser(Users user) {
-        if (user.getPlan() == null || user.getPlan().isBlank()) {
-            user.setPlan("STARTER");
+        if (isAdminEmail(user.getEmail())) {
+            user.setRole("ADMIN");
+            user.setPlan("ENTERPRISE");
+        } else {
+            if (user.getRole() == null || user.getRole().isBlank()) {
+                user.setRole("USER");
+            }
+            if (user.getPlan() == null || user.getPlan().isBlank()) {
+                user.setPlan("STARTER");
+            }
         }
         if (user.getScansToday() == null) {
             user.setScansToday(0);
@@ -153,13 +165,17 @@ public class UserService {
     @Transactional
     public UserDto syncClerkUser(String clerkId, String name, String email) {
         Users user = userRepository.findByClerkId(clerkId).orElse(null);
+        boolean isAdmin = isAdminEmail(email);
         if (user == null) {
             user = new Users();
             user.setClerkId(clerkId);
-            user.setRole("USER");
-            user.setPlan("STARTER");
+            user.setRole(isAdmin ? "ADMIN" : "USER");
+            user.setPlan(isAdmin ? "ENTERPRISE" : "STARTER");
             user.setScansToday(0);
             user.setLastScanDate(LocalDate.now());
+        } else if (isAdmin) {
+            user.setRole("ADMIN");
+            user.setPlan("ENTERPRISE");
         }
         if (name != null && !name.isEmpty())
             user.setName(name);

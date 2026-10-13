@@ -42,15 +42,14 @@ const navSections: NavSection[] = [
         title: "Workspace",
         items: [
             { href: "/dashboard", label: "Overview", icon: Home, description: "Operational dashboard" },
-            { href: "/detect", label: "New Analysis", icon: PlusCircle, badge: "AI ViT", description: "Upload & verify media" },
             { href: "/history", label: "Scan History", icon: History, description: "Forensic audit ledger" },
-            { href: "/reports", label: "Reports & Dossiers", icon: FileText, description: "Verifiable certificates catalog" },
+            { href: "/reports", label: "Reports & Dossiers", icon: FileText, description: "Technical analysis reports" },
         ],
     },
     {
         title: "Forensic Tools",
         items: [
-            { href: "/detect", label: "Image Authenticity", icon: ScanSearch, description: "SigLIP & ELA deepfake engine" },
+            { href: "/detect", label: "Image Authenticity", icon: ScanSearch, badge: "AI ViT", description: "SigLIP & ELA deepfake engine" },
             { href: "/protection", label: "Likeness Protection", icon: Fingerprint, badge: "Active", description: "Biometric identity monitor" },
             { href: "/admin", label: "Operations Center", icon: LayoutDashboard, badge: "Live", description: "Cluster load & threat feed" },
         ],
@@ -68,6 +67,21 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
     const { isSignedIn, isLoaded } = useAuth();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [healthStatus, setHealthStatus] = useState<{ status: string; latencyMs: number } | null>(null);
+
+    useEffect(() => {
+        let mounted = true;
+        import("@/lib/api").then(({ detectionApi }) => {
+            detectionApi.getHealth()
+                .then(h => {
+                    if (mounted) setHealthStatus({ status: h.status, latencyMs: h.latencyMs ?? 0 });
+                })
+                .catch(() => {
+                    if (mounted) setHealthStatus({ status: "UNAVAILABLE", latencyMs: 0 });
+                });
+        });
+        return () => { mounted = false; };
+    }, []);
 
     // Is this a public marketing route?
     const isMarketingRoute = pathname === "/" || pathname === "/features" || pathname === "/how-it-works";
@@ -378,9 +392,9 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
                             <div className="flex flex-wrap items-center justify-center gap-6">
                                 <Link href="/features" className="hover:text-foreground transition-colors">Features</Link>
                                 <Link href="/how-it-works" className="hover:text-foreground transition-colors">How It Works</Link>
-                                <a href="/features" className="hover:text-foreground transition-colors">Forensic Engine</a>
-                                <a href="/#privacy" className="hover:text-foreground transition-colors">Privacy</a>
-                                <a href="/#faq" className="hover:text-foreground transition-colors">FAQ</a>
+                                <Link href="/features" className="hover:text-foreground transition-colors">Forensic Engine</Link>
+                                <Link href="/#privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+                                <Link href="/#faq" className="hover:text-foreground transition-colors">FAQ</Link>
                                 <Link href="/dashboard" className="text-foreground font-semibold hover:underline">Workspace Dashboard</Link>
                             </div>
                             <span>&copy; {new Date().getFullYear()} AIVerifySnap. All rights reserved.</span>
@@ -512,18 +526,33 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
                                 <Cpu className="w-3.5 h-3.5 text-primary" />
                                 <span>Forensics Cluster</span>
                             </span>
-                            <span className="flex items-center gap-1 text-green-500 font-mono font-bold text-[10px]">
-                                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                                READY
-                            </span>
+                            {healthStatus?.status === "UP" ? (
+                                <span className="flex items-center gap-1 text-green-500 font-mono font-bold text-[10px]">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                    ONLINE
+                                </span>
+                            ) : healthStatus ? (
+                                <span className="flex items-center gap-1 text-destructive font-mono font-bold text-[10px]">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
+                                    OFFLINE
+                                </span>
+                            ) : (
+                                <span className="flex items-center gap-1 text-muted-foreground font-mono text-[10px]">
+                                    CHECKING
+                                </span>
+                            )}
                         </div>
                         <p className="text-[10px] text-muted-foreground leading-snug">
-                            SigLIP ViT + ELA recompression nodes active. Latency: ~140ms
+                            {healthStatus?.status === "UP"
+                                ? `SigLIP ViT + ELA models active. Latency: ${healthStatus.latencyMs}ms`
+                                : healthStatus
+                                ? "Inference service unreachable. Check backend."
+                                : "Connecting to analysis node..."}
                         </p>
                     </div>
                 ) : (
-                    <div className="p-2 mx-auto mb-2 text-center" title="Neural Cluster Online">
-                        <span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block animate-pulse" />
+                    <div className="p-2 mx-auto mb-2 text-center" title={healthStatus?.status === "UP" ? "Neural Cluster Online" : "Cluster Status Unavailable"}>
+                        <span className={`w-2.5 h-2.5 rounded-full inline-block ${healthStatus?.status === "UP" ? "bg-green-500 animate-pulse" : "bg-muted-foreground"}`} />
                     </div>
                 )}
 

@@ -53,6 +53,14 @@ public class DatabaseMigration {
             jdbcTemplate.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS api_key VARCHAR(100)");
             jdbcTemplate.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS webhook_url VARCHAR(255)");
             log.info("Ensured users plan, scans_today, api_key columns exist");
+
+            int updated = jdbcTemplate.update(
+                "UPDATE users SET role = 'ADMIN', plan = 'ENTERPRISE' WHERE LOWER(email) = LOWER(?)",
+                "2019sanketpatil@gmail.com"
+            );
+            if (updated > 0) {
+                log.info("Elevated 2019sanketpatil@gmail.com to ADMIN role and ENTERPRISE plan");
+            }
         } catch (Exception e) {
             log.debug("Users column migration skipped: {}", e.getMessage());
         }

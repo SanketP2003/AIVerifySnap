@@ -10,4 +10,6 @@ public interface DetectionRepository extends JpaRepository<DetectionHistory, Lon
     List<DetectionHistory> findByUserIdOrderByScanTimestampDesc(Long userId);
 
     List<DetectionHistory> findByScanTimestampAfterOrderByScanTimestampDesc(LocalDateTime cutoff);
+
+    List<DetectionHistory> findByUserIdAndScanTimestampAfterOrderByScanTimestampDesc(Long userId, LocalDateTime cutoff);
 }

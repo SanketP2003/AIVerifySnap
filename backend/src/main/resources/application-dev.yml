@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://ep-red-cell-a1ttg8pr-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
-    username: neondb_owner
-    password: npg_GCgFl4Ub3zhJ
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://ep-red-cell-a1ttg8pr-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require}
+    username: ${SPRING_DATASOURCE_USERNAME:neondb_owner}
+    password: ${SPRING_DATASOURCE_PASSWORD:npg_GCgFl4Ub3zhJ}
     driver-class-name: org.postgresql.Driver
 
     hikari:

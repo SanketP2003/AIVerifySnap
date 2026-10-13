@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { motion } from "framer-motion";
 import {
     Terminal,
@@ -10,10 +9,8 @@ import {
     Copy,
     Check,
     Cpu,
-    Database,
     Globe,
     Server,
-    ShieldCheck,
     Layers,
     Code2,
     Send,
@@ -21,7 +18,7 @@ import {
     ExternalLink,
     RefreshCw
 } from "lucide-react";
-import { detectionApi, planStorage } from "@/lib/api";
+import { detectionApi } from "@/lib/api";
 import { toast } from "sonner";
 import { useUser } from "@clerk/nextjs";
 
@@ -80,9 +77,6 @@ export default function DevelopersPage() {
 
         const start = performance.now();
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-            const fullUrl = `${apiUrl}${selectedEndpoint}`;
-
             let resData: unknown;
             let status = 200;
 

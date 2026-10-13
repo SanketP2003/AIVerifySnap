@@ -17,7 +17,6 @@ import {
     Download,
     Maximize2,
     Minimize2,
-    Info,
     ChevronDown,
     ChevronUp,
     SlidersHorizontal,
@@ -29,22 +28,29 @@ import {
     ExternalLink,
     Lock,
     Search,
-    Trash2,
-    ArrowRight
+    Trash2
 } from "lucide-react";
 import Link from "next/link";
 import {
     detectionApi,
     DetectionResult,
     BulkDetectionResult,
-    ReverseSearchResult,
-    planStorage
+    ReverseSearchResult
 } from "@/lib/api";
 import { generatePdfReport, generateBulkPdfReport } from "@/lib/pdfReportGenerator";
 import { toast } from "sonner";
 import { useUser } from "@clerk/nextjs";
+import { MAX_UPLOAD_DIM, calculateTargetDimensions, calculateBufferSha256 } from "@/lib/imageProcessing";
 
-const MAX_UPLOAD_DIM = 512;
+async function calculateFileSha256(file: File): Promise<string> {
+    try {
+        const buffer = await file.arrayBuffer();
+        return await calculateBufferSha256(buffer);
+    } catch (e) {
+        console.error("SHA-256 calculation error:", e);
+        return "Unavailable";
+    }
+}
 
 function resizeImageForUpload(file: File): Promise<File> {
     return new Promise((resolve, reject) => {
@@ -59,15 +65,7 @@ function resizeImageForUpload(file: File): Promise<File> {
                 return;
             }
 
-            let newW = width;
-            let newH = height;
-            if (width > height) {
-                newW = MAX_UPLOAD_DIM;
-                newH = Math.round((height / width) * MAX_UPLOAD_DIM);
-            } else {
-                newH = MAX_UPLOAD_DIM;
-                newH = Math.round((width / height) * MAX_UPLOAD_DIM);
-            }
+            const { width: newW, height: newH } = calculateTargetDimensions(width, height, MAX_UPLOAD_DIM);
 
             const canvas = document.createElement("canvas");
             canvas.width = newW;
@@ -108,7 +106,8 @@ const analysisSteps = [
 export default function DetectPage() {
     const { user } = useUser();
     const [scanMode, setScanMode] = useState<"single" | "bulk">("single");
-    const [userPlan, setUserPlan] = useState<"STARTER" | "PROFESSIONAL" | "ENTERPRISE">("PROFESSIONAL");
+    const [userPlan, setUserPlan] = useState<"STARTER" | "PROFESSIONAL" | "ENTERPRISE">("STARTER");
+    const [fileSha256, setFileSha256] = useState<string>("");
 
     // Single Scan State
     const [file, setFile] = useState<File | null>(null);
@@ -135,11 +134,21 @@ export default function DetectPage() {
     const [bulkResult, setBulkResult] = useState<BulkDetectionResult | null>(null);
 
     useEffect(() => {
-        setUserPlan(planStorage.getPlan());
-        const handlePlanChange = () => setUserPlan(planStorage.getPlan());
-        window.addEventListener("avs_plan_changed", handlePlanChange);
-        return () => window.removeEventListener("avs_plan_changed", handlePlanChange);
-    }, []);
+        if (user) {
+            const identifier = user.id || user.username || user.primaryEmailAddress?.emailAddress || "";
+            detectionApi.getUserQuota(identifier)
+                .then((quota) => {
+                    if (quota && quota.plan) {
+                        setUserPlan(quota.plan);
+                    }
+                })
+                .catch(() => {
+                    setUserPlan("STARTER");
+                });
+        } else {
+            setUserPlan("STARTER");
+        }
+    }, [user]);
 
     const maxBulkAllowed = useMemo(() => {
         if (userPlan === "STARTER") return 1;
@@ -169,8 +178,12 @@ export default function DetectPage() {
         setCurrentStepIndex(0);
 
         try {
-            const optimizedFile = await resizeImageForUpload(uploadedFile);
-            const result = await detectionApi.detectImage(optimizedFile);
+            // Compute cryptographic hash of the original upload
+            const sha256 = await calculateFileSha256(uploadedFile);
+            setFileSha256(sha256);
+
+            // Send uncompressed original bytes to preserve compression tables and ELA forensic integrity
+            const result = await detectionApi.detectImage(uploadedFile);
             setDetectionResult(result);
             setResultReady(true);
             toast.success("Forensic analysis completed successfully");
@@ -198,6 +211,7 @@ export default function DetectPage() {
         setFile(null);
         setResultReady(false);
         setDetectionResult(null);
+        setFileSha256("");
         setErrorMessage(null);
         setReverseResult(null);
         setShowReversePanel(false);
@@ -209,9 +223,7 @@ export default function DetectPage() {
     const handleDownloadPdf = () => {
         if (!detectionResult || !file) return;
         const reportId = `AVS-${Math.floor(1000 + Math.random() * 9000)}`;
-        const shaHash = typeof detectionResult.details?.sha256 === "string"
-            ? detectionResult.details.sha256
-            : `7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f${reportId}`;
+        const shaHash = fileSha256 || (typeof detectionResult.details?.sha256 === "string" ? detectionResult.details.sha256 : "Unavailable");
 
         generatePdfReport({
             reportId,
@@ -222,13 +234,13 @@ export default function DetectPage() {
             sha256Hash: shaHash,
             model: detectionResult.model_status || "SigLIP ViT + ELA CNN Fusion",
             elaMetrics: {
-                mean: Number(detectionResult.details?.ela_mean ?? 0.04),
-                std: Number(detectionResult.details?.ela_std ?? 0.07),
-                max: Number(detectionResult.details?.ela_max ?? 0.42),
+                mean: typeof detectionResult.details?.ela_mean === "number" ? detectionResult.details.ela_mean : undefined,
+                std: typeof detectionResult.details?.ela_std === "number" ? detectionResult.details.ela_std : undefined,
+                max: typeof detectionResult.details?.ela_max === "number" ? detectionResult.details.ela_max : undefined,
             },
             rawScores: detectionResult.details?.raw_output
         });
-        toast.success("Certified Forensic PDF Report downloaded");
+        toast.success("Forensic Analysis PDF Report downloaded");
     };
 
     const handleDownloadJson = () => {
@@ -874,7 +886,8 @@ export default function DetectPage() {
                                             {viewMode === "Slider" && (
                                                 <ImageComparisonSlider
                                                     originalImage={imageUrl}
-                                                    elaImage={elaImageUrl || imageUrl}
+                                                    comparisonImage={elaImageUrl || imageUrl}
+                                                    comparisonLabel="Error Level Analysis (ELA)"
                                                 />
                                             )}
 

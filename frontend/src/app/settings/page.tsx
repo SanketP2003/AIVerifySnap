@@ -17,6 +17,18 @@ import {
 import { useTheme } from "next-themes";
 import { useUser, useAuth } from "@clerk/nextjs";
 
+import { detectionApi, HealthStatus } from "@/lib/api";
+
+interface WorkspacePreferences {
+    sensitivity: number;
+    elaFactor: number;
+    autoCertificate: boolean;
+    hashLedger: boolean;
+    tableDensity: "comfortable" | "compact";
+}
+
+const STORAGE_KEY = "avs_workspace_preferences";
+
 export default function WorkspaceSettingsPage() {
     const { theme, setTheme } = useTheme();
     const { user, isLoaded: userLoaded } = useUser();
@@ -29,29 +41,70 @@ export default function WorkspaceSettingsPage() {
     const [hashLedger, setHashLedger] = useState(true);
     const [tableDensity, setTableDensity] = useState<"comfortable" | "compact">("comfortable");
     const [savedMessage, setSavedMessage] = useState<string | null>(null);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [saving, setSaving] = useState(false);
 
     // Diagnostics State
     const [backendStatus, setBackendStatus] = useState<"online" | "checking" | "offline">("checking");
     const [backendPing, setBackendPing] = useState<number | null>(null);
+    const [healthDetails, setHealthDetails] = useState<HealthStatus | null>(null);
 
+    // Load persisted preferences on mount
     useEffect(() => {
-        const start = performance.now();
-        fetch("http://localhost:8080/detection/history", { method: "HEAD", mode: "no-cors" })
-            .then(() => {
-                const duration = Math.round(performance.now() - start);
-                setBackendPing(duration);
-                setBackendStatus("online");
+        try {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                const parsed: Partial<WorkspacePreferences> = JSON.parse(stored);
+                if (typeof parsed.sensitivity === "number") setSensitivity(parsed.sensitivity);
+                if (typeof parsed.elaFactor === "number") setElaFactor(parsed.elaFactor);
+                if (typeof parsed.autoCertificate === "boolean") setAutoCertificate(parsed.autoCertificate);
+                if (typeof parsed.hashLedger === "boolean") setHashLedger(parsed.hashLedger);
+                if (parsed.tableDensity === "comfortable" || parsed.tableDensity === "compact") {
+                    setTableDensity(parsed.tableDensity);
+                }
+            }
+        } catch (e) {
+            console.error("Failed to load local preferences:", e);
+        }
+
+        // Live health check using configured API
+        detectionApi.getHealth()
+            .then((h) => {
+                setHealthDetails(h);
+                if (h.status === "UP") {
+                    setBackendStatus("online");
+                    setBackendPing(h.latencyMs ?? null);
+                } else {
+                    setBackendStatus("offline");
+                    setBackendPing(null);
+                }
             })
             .catch(() => {
-                // If cors blocks HEAD, try normal fetch or fallback to online since backend is verified
-                setBackendStatus("online");
-                setBackendPing(14);
+                setBackendStatus("offline");
+                setBackendPing(null);
             });
     }, []);
 
     const handleSave = () => {
-        setSavedMessage("Workspace preferences synchronized successfully.");
-        setTimeout(() => setSavedMessage(null), 3000);
+        setSaving(true);
+        setErrorMessage(null);
+        try {
+            const prefs: WorkspacePreferences = {
+                sensitivity,
+                elaFactor,
+                autoCertificate,
+                hashLedger,
+                tableDensity,
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+            setSavedMessage("Workspace preferences saved to browser storage successfully.");
+            setTimeout(() => setSavedMessage(null), 3500);
+        } catch (err: unknown) {
+            setErrorMessage(err instanceof Error ? err.message : "Failed to save preferences to storage");
+            setTimeout(() => setErrorMessage(null), 4000);
+        } finally {
+            setSaving(false);
+        }
     };
 
     const handleReset = () => {
@@ -60,6 +113,11 @@ export default function WorkspaceSettingsPage() {
         setAutoCertificate(true);
         setHashLedger(true);
         setTableDensity("comfortable");
+        try {
+            localStorage.removeItem(STORAGE_KEY);
+        } catch {
+            // ignore
+        }
         setSavedMessage("Preferences reset to platform defaults.");
         setTimeout(() => setSavedMessage(null), 3000);
     };
@@ -70,9 +128,9 @@ export default function WorkspaceSettingsPage() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-border/80 gap-4">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
-                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                        <span className={`w-2 h-2 rounded-full ${backendStatus === "online" ? "bg-green-500 animate-pulse" : "bg-primary"}`} />
                         <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
-                            Configuration &middot; Node Cluster 01
+                            Configuration &middot; Forensic Cluster
                         </span>
                     </div>
                     <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground font-sans">
@@ -95,10 +153,11 @@ export default function WorkspaceSettingsPage() {
                     <button
                         type="button"
                         onClick={handleSave}
+                        disabled={saving}
                         className="px-5 py-2 rounded-xl bg-foreground text-background text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-all shadow-md flex items-center gap-2"
                     >
                         <Save className="w-3.5 h-3.5" />
-                        <span>Save Preferences</span>
+                        <span>{saving ? "Saving..." : "Save Preferences"}</span>
                     </button>
                 </div>
             </div>
@@ -107,6 +166,12 @@ export default function WorkspaceSettingsPage() {
                 <div className="p-4 rounded-2xl bg-green-500/10 border border-green-500/30 text-green-700 dark:text-green-400 text-xs font-semibold flex items-center gap-2 transition-all">
                     <CheckCircle2 className="w-4 h-4 shrink-0" />
                     <span>{savedMessage}</span>
+                </div>
+            )}
+
+            {errorMessage && (
+                <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/30 text-destructive text-xs font-semibold flex items-center gap-2 transition-all">
+                    <span>{errorMessage}</span>
                 </div>
             )}
 
@@ -332,34 +397,40 @@ export default function WorkspaceSettingsPage() {
                         <div className="space-y-3 text-xs">
                             <div className="p-3 rounded-2xl bg-muted/30 border border-border/40 space-y-1">
                                 <div className="flex justify-between font-semibold">
-                                    <span className="text-foreground">Backend API (Spring Boot)</span>
-                                    <span className="font-mono text-green-600">Port 8080</span>
+                                    <span className="text-foreground">Backend API Service</span>
+                                    <span className={`font-mono ${backendStatus === "online" ? "text-green-600" : "text-destructive"}`}>
+                                        {backendStatus === "online" ? "CONNECTED" : "OFFLINE"}
+                                    </span>
                                 </div>
                                 <div className="flex justify-between text-[11px] text-muted-foreground">
                                     <span>Latency</span>
-                                    <span className="font-mono">{backendPing !== null ? `${backendPing}ms` : "Active"}</span>
+                                    <span className="font-mono">{backendPing !== null ? `${backendPing}ms` : "Unavailable"}</span>
                                 </div>
                             </div>
 
                             <div className="p-3 rounded-2xl bg-muted/30 border border-border/40 space-y-1">
                                 <div className="flex justify-between font-semibold">
                                     <span className="text-foreground">ML Inference Engine</span>
-                                    <span className="font-mono text-green-600">Port 8000</span>
+                                    <span className="font-mono text-foreground">
+                                        {healthDetails?.mlService || (backendStatus === "online" ? "AVAILABLE" : "UNAVAILABLE")}
+                                    </span>
                                 </div>
                                 <div className="flex justify-between text-[11px] text-muted-foreground">
-                                    <span>Model</span>
-                                    <span className="font-mono">SigLIP ViT Ensemble</span>
+                                    <span>Pipeline</span>
+                                    <span className="font-mono">SigLIP ViT + ELA</span>
                                 </div>
                             </div>
 
                             <div className="p-3 rounded-2xl bg-muted/30 border border-border/40 space-y-1">
                                 <div className="flex justify-between font-semibold">
-                                    <span className="text-foreground">PostgreSQL Forensic DB</span>
-                                    <span className="font-mono text-green-600">Port 5432</span>
+                                    <span className="text-foreground">Database Connectivity</span>
+                                    <span className={`font-mono ${healthDetails?.database === "UP" || backendStatus === "online" ? "text-green-600" : "text-destructive"}`}>
+                                        {healthDetails?.database || (backendStatus === "online" ? "CONNECTED" : "DISCONNECTED")}
+                                    </span>
                                 </div>
                                 <div className="flex justify-between text-[11px] text-muted-foreground">
-                                    <span>Records Indexed</span>
-                                    <span className="font-mono">268 Scans</span>
+                                    <span>Ledger Storage</span>
+                                    <span className="font-mono">Live PostgreSQL</span>
                                 </div>
                             </div>
                         </div>

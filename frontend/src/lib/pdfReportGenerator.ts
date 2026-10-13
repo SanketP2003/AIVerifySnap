@@ -59,15 +59,15 @@ export function generatePdfReport(data: ForensicReportPdfData) {
     doc.setTextColor(71, 85, 105);
     doc.setFontSize(8);
     doc.text('FILE EXAMINED', 20, 45);
-    doc.text('CERTIFICATE TIMESTAMP', 80, 45);
-    doc.text('SECURITY CLEARANCE', 145, 45);
+    doc.text('REPORT TIMESTAMP', 80, 45);
+    doc.text('ANALYSIS TYPE', 145, 45);
 
     doc.setTextColor(15, 23, 42);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
     doc.text(data.fileName.length > 28 ? data.fileName.substring(0, 26) + '...' : data.fileName, 20, 53);
     doc.text(data.timestamp || new Date().toLocaleString(), 80, 53);
-    doc.text('LEVEL 4 / FORENSIC VERIFIED', 145, 53);
+    doc.text('AUTOMATED MEDIA ANALYSIS', 145, 53);
 
     // Classification Verdict Banner
     let bannerColor = [16, 185, 129]; // Emerald Green for Real
@@ -98,7 +98,7 @@ export function generatePdfReport(data: ForensicReportPdfData) {
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(16);
-    doc.text(`${data.confidence.toFixed(1)}%`, 188, 83, { align: 'right' });
+    doc.text(`${typeof data.confidence === 'number' ? data.confidence.toFixed(1) : 'N/A'}%`, 188, 83, { align: 'right' });
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.text('CONFIDENCE SCORE', 188, 89, { align: 'right' });
@@ -113,16 +113,20 @@ export function generatePdfReport(data: ForensicReportPdfData) {
     doc.line(14, 113, 196, 113);
 
     const metricsStartY = 120;
-    const meanVal = data.elaMetrics?.mean !== undefined ? data.elaMetrics.mean.toFixed(4) : '0.0412';
-    const stdVal = data.elaMetrics?.std !== undefined ? data.elaMetrics.std.toFixed(4) : '0.0784';
-    const maxVal = data.elaMetrics?.max !== undefined ? data.elaMetrics.max.toFixed(4) : '0.4190';
+    const meanVal = data.elaMetrics?.mean !== undefined && Number.isFinite(data.elaMetrics.mean) ? data.elaMetrics.mean.toFixed(4) : 'Not provided';
+    const stdVal = data.elaMetrics?.std !== undefined && Number.isFinite(data.elaMetrics.std) ? data.elaMetrics.std.toFixed(4) : 'Not provided';
+    const maxVal = data.elaMetrics?.max !== undefined && Number.isFinite(data.elaMetrics.max) ? data.elaMetrics.max.toFixed(4) : 'Not provided';
+
+    const meanStatus = meanVal === 'Not provided' ? 'N/A' : (isFake ? 'ELEVATED' : 'NOMINAL');
+    const stdStatus = stdVal === 'Not provided' ? 'N/A' : (isFake ? 'HIGH ANOMALY' : 'NORMAL');
+    const maxStatus = maxVal === 'Not provided' ? 'N/A' : (isFake ? 'CRITICAL DELTA' : 'WITHIN BOUNDS');
 
     const metricsData = [
         ['Metric Examination', 'Measured Value', 'Baseline Threshold', 'Evaluation Status'],
-        ['Error Level Analysis (ELA) Mean', meanVal, '< 0.0500', isFake ? 'ELEVATED' : 'NOMINAL'],
-        ['Compression Standard Deviation', stdVal, '< 0.0900', isFake ? 'HIGH ANOMALY' : 'NORMAL'],
-        ['Localized Artifact Peak (Max)', maxVal, '< 0.3500', isFake ? 'CRITICAL DELTA' : 'WITHIN BOUNDS'],
-        ['SigLIP Vision Transformer Layer', `${data.confidence.toFixed(2)}%`, '> 90.00%', isFake ? 'SYNTHETIC' : 'VERIFIED REAL'],
+        ['Error Level Analysis (ELA) Mean', meanVal, '< 0.0500', meanStatus],
+        ['Compression Standard Deviation', stdVal, '< 0.0900', stdStatus],
+        ['Localized Artifact Peak (Max)', maxVal, '< 0.3500', maxStatus],
+        ['SigLIP Vision Transformer Layer', typeof data.confidence === 'number' ? `${data.confidence.toFixed(2)}%` : 'Not provided', '> 90.00%', isFake ? 'SYNTHETIC' : 'AUTHENTIC'],
     ];
 
     let currentY = metricsStartY;
@@ -169,9 +173,9 @@ export function generatePdfReport(data: ForensicReportPdfData) {
 
     const modelDetails = [
         `Primary Neural Architecture: ${data.model || 'SigLIP ViT + Error Level Analysis (ELA) Dual-Stream Fusion'}`,
-        'Feature Vector Resolution: 512x512 with LANCZOS spatial preservation',
-        'Cross-Validation Framework: Reverse image search via Google Lens & web index verification',
-        'Quantization Matrix: JPEG 85 Quality Delta Matrix with spatial gradient tracking',
+        'Feature Vector Resolution: Spatial preservation pipeline with dual stream embeddings',
+        'Verification Framework: Probabilistic error delta and deepfake classifier analysis',
+        'Quantization Matrix: JPEG Compression Residual Matrix tracking',
     ];
 
     modelDetails.forEach((line) => {
@@ -180,12 +184,12 @@ export function generatePdfReport(data: ForensicReportPdfData) {
         currentY += 6;
     });
 
-    // Section 3: Cryptographic Chain of Custody & Hash
+    // Section 3: Cryptographic File Identification
     currentY += 6;
     doc.setTextColor(15, 23, 42);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(11);
-    doc.text('3. CRYPTOGRAPHIC CHAIN OF CUSTODY', 14, currentY);
+    doc.text('3. ORIGINAL FILE IDENTIFICATION', 14, currentY);
 
     doc.setDrawColor(borderGray[0], borderGray[1], borderGray[2]);
     doc.line(14, currentY + 3, 196, currentY + 3);
@@ -197,12 +201,12 @@ export function generatePdfReport(data: ForensicReportPdfData) {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(100, 116, 139);
-    doc.text('SHA-256 DIGITAL AUTHENTICITY FINGERPRINT (IMMUTABLE HASH):', 20, currentY + 7);
+    doc.text('ORIGINAL FILE SHA-256 DIGITAL HASH:', 20, currentY + 7);
 
     doc.setFont('courier', 'bold');
     doc.setFontSize(8.5);
     doc.setTextColor(15, 23, 42);
-    doc.text(data.sha256Hash || '7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b', 20, currentY + 15);
+    doc.text(data.sha256Hash || 'Unavailable from analysis service', 20, currentY + 15);
 
     // Footer & Signature Block
     const footerY = 250;
@@ -213,13 +217,13 @@ export function generatePdfReport(data: ForensicReportPdfData) {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8.5);
     doc.setTextColor(15, 23, 42);
-    doc.text('EXAMINER CERTIFICATION:', 14, footerY + 8);
+    doc.text('SYSTEM SPECIFICATIONS:', 14, footerY + 8);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(71, 85, 105);
-    doc.text('AIVerifySnap Autonomous Digital Forensics Engine v5.0', 14, footerY + 14);
-    doc.text('Certified against ISO/IEC 27037 Digital Evidence Standards', 14, footerY + 19);
+    doc.text('AIVerifySnap Digital Image Analysis Engine', 14, footerY + 14);
+    doc.text('Multimodal Neural Classifier with Error Level Analysis', 14, footerY + 19);
 
     // Official Seal representation
     doc.setDrawColor(accentBlue[0], accentBlue[1], accentBlue[2]);
@@ -228,8 +232,8 @@ export function generatePdfReport(data: ForensicReportPdfData) {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.5);
     doc.setTextColor(accentBlue[0], accentBlue[1], accentBlue[2]);
-    doc.text('OFFICIAL VERIFIED', 170, footerY + 14, { align: 'center' });
-    doc.text('SEAL OF AUDIT', 170, footerY + 18, { align: 'center' });
+    doc.text('AIVERIFYSNAP', 170, footerY + 14, { align: 'center' });
+    doc.text('ANALYSIS REPORT', 170, footerY + 18, { align: 'center' });
 
     // Legal Disclaimer
     doc.setFont('helvetica', 'italic');

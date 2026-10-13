@@ -1,24 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { motion } from "framer-motion";
 import {
     Check,
     X,
     Shield,
-    Sparkles,
-    Zap,
     Building2,
-    ArrowRight,
     HelpCircle,
-    Download,
-    Layers,
-    FileText,
-    Fingerprint,
-    Cpu,
-    BadgeCheck,
-    ExternalLink
+    BadgeCheck
 } from "lucide-react";
 import { planStorage, detectionApi } from "@/lib/api";
 import { toast } from "sonner";
