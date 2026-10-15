@@ -13,15 +13,15 @@ export function ResultBadge({ status, size = "md", showIcon = true }: ResultBadg
     let dotClass = "";
 
     if (status === "Real") {
-        badgeClass = "bg-green-500/10 text-green-600 hover:bg-green-500/20 border-green-500/20";
+        badgeClass = "bg-green-500/10 text-green-700 dark:text-green-400 hover:bg-green-500/20 border-green-500/30 dark:border-green-500/40";
         Icon = CheckCircle2;
         dotClass = "bg-green-500";
     } else if (status === "AI Generated") {
-        badgeClass = "bg-destructive/10 text-destructive hover:bg-destructive/20 border-destructive/20";
+        badgeClass = "bg-destructive/10 text-destructive hover:bg-destructive/20 border-destructive/30 dark:border-destructive/40";
         Icon = ShieldAlert;
         dotClass = "bg-destructive";
     } else {
-        badgeClass = "bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20 border-yellow-500/20";
+        badgeClass = "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-500/20 border-yellow-500/30 dark:border-yellow-500/40";
         Icon = AlertTriangle;
         dotClass = "bg-yellow-500";
     }

@@ -39,14 +39,14 @@ export default function FeaturesPage() {
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-4">
                     <Link
                         href="/detect"
-                        className="w-full sm:w-auto px-8 py-4 bg-foreground text-background font-semibold rounded-full hover:bg-foreground/90 transition-all text-base shadow-md flex items-center justify-center gap-2"
+                        className="w-full sm:w-auto px-7 py-3.5 bg-foreground text-background font-semibold rounded-xl hover:bg-foreground/90 transition-all text-sm shadow-sm flex items-center justify-center gap-2"
                     >
-                        <PlusCircle className="w-5 h-5" />
+                        <PlusCircle className="w-4 h-4" />
                         <span>Start Analyzing Images</span>
                     </Link>
                     <Link
                         href="/dashboard"
-                        className="w-full sm:w-auto px-8 py-4 bg-card border border-border text-foreground font-semibold rounded-full hover:bg-muted transition-all text-base shadow-sm flex items-center justify-center gap-2"
+                        className="w-full sm:w-auto px-7 py-3.5 bg-card border border-border text-foreground font-semibold rounded-xl hover:bg-muted transition-all text-sm shadow-sm flex items-center justify-center gap-2"
                     >
                         <span>Open Dashboard</span>
                         <ArrowRight className="w-4 h-4 text-muted-foreground" />
@@ -71,7 +71,7 @@ export default function FeaturesPage() {
 
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {/* 1 */}
-                        <div className="p-7 rounded-3xl bg-card border border-border shadow-sm space-y-4 hover:border-foreground/30 transition-all">
+                        <div className="p-7 rounded-2xl bg-card border border-border shadow-sm space-y-4 hover:border-foreground/30 transition-all">
                             <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                                 <Cpu className="w-6 h-6" />
                             </div>
@@ -87,7 +87,7 @@ export default function FeaturesPage() {
                         </div>
 
                         {/* 2 */}
-                        <div className="p-7 rounded-3xl bg-card border border-border shadow-sm space-y-4 hover:border-foreground/30 transition-all">
+                        <div className="p-7 rounded-2xl bg-card border border-border shadow-sm space-y-4 hover:border-foreground/30 transition-all">
                             <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                                 <Layers className="w-6 h-6" />
                             </div>
@@ -103,7 +103,7 @@ export default function FeaturesPage() {
                         </div>
 
                         {/* 3 */}
-                        <div className="p-7 rounded-3xl bg-card border border-border shadow-sm space-y-4 hover:border-foreground/30 transition-all">
+                        <div className="p-7 rounded-2xl bg-card border border-border shadow-sm space-y-4 hover:border-foreground/30 transition-all">
                             <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                                 <Sparkles className="w-6 h-6" />
                             </div>
@@ -119,7 +119,7 @@ export default function FeaturesPage() {
                         </div>
 
                         {/* 4 */}
-                        <div className="p-7 rounded-3xl bg-card border border-border shadow-sm space-y-4 hover:border-foreground/30 transition-all">
+                        <div className="p-7 rounded-2xl bg-card border border-border shadow-sm space-y-4 hover:border-foreground/30 transition-all">
                             <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                                 <ShieldCheck className="w-6 h-6" />
                             </div>
@@ -135,7 +135,7 @@ export default function FeaturesPage() {
                         </div>
 
                         {/* 5 */}
-                        <div className="p-7 rounded-3xl bg-card border border-border shadow-sm space-y-4 hover:border-foreground/30 transition-all">
+                        <div className="p-7 rounded-2xl bg-card border border-border shadow-sm space-y-4 hover:border-foreground/30 transition-all">
                             <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                                 <History className="w-6 h-6" />
                             </div>
@@ -151,7 +151,7 @@ export default function FeaturesPage() {
                         </div>
 
                         {/* 6 */}
-                        <div className="p-7 rounded-3xl bg-card border border-border shadow-sm space-y-4 hover:border-foreground/30 transition-all">
+                        <div className="p-7 rounded-2xl bg-card border border-border shadow-sm space-y-4 hover:border-foreground/30 transition-all">
                             <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                                 <Fingerprint className="w-6 h-6" />
                             </div>
@@ -182,7 +182,7 @@ export default function FeaturesPage() {
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-6">
-                        <div className="p-8 rounded-3xl bg-card border border-border shadow-sm space-y-4">
+                        <div className="p-8 rounded-2xl bg-card border border-border shadow-sm space-y-4">
                             <div className="flex items-center gap-2">
                                 <Cpu className="w-5 h-5 text-primary" />
                                 <h3 className="font-bold text-foreground text-lg">Machine Learning Inference</h3>
@@ -206,7 +206,7 @@ export default function FeaturesPage() {
                             </ul>
                         </div>
 
-                        <div className="p-8 rounded-3xl bg-card border border-border shadow-sm space-y-4">
+                        <div className="p-8 rounded-2xl bg-card border border-border shadow-sm space-y-4">
                             <div className="flex items-center gap-2">
                                 <Layers className="w-5 h-5 text-primary" />
                                 <h3 className="font-bold text-foreground text-lg">Signal & Compression Forensics</h3>

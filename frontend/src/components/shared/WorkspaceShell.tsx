@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import {
     ScanSearch,
     History,
-    LayoutDashboard,
     Menu,
     X,
     ChevronLeft,
@@ -18,7 +17,11 @@ import {
     Cpu,
     ExternalLink,
     FileText,
-    Settings
+    Settings,
+    Shield,
+    Code2,
+    CreditCard,
+    ChevronRight as ChevronBreadcrumb
 } from "lucide-react";
 import { useAuth, UserButton, SignInButton } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
@@ -42,6 +45,7 @@ const navSections: NavSection[] = [
         title: "Workspace",
         items: [
             { href: "/dashboard", label: "Overview", icon: Home, description: "Operational dashboard" },
+            { href: "/detect", label: "New Analysis", icon: PlusCircle, description: "Submit specimen for inspection" },
             { href: "/history", label: "Scan History", icon: History, description: "Forensic audit ledger" },
             { href: "/reports", label: "Reports & Dossiers", icon: FileText, description: "Technical analysis reports" },
         ],
@@ -49,15 +53,17 @@ const navSections: NavSection[] = [
     {
         title: "Forensic Tools",
         items: [
-            { href: "/detect", label: "Image Authenticity", icon: ScanSearch, badge: "AI ViT", description: "SigLIP & ELA deepfake engine" },
+            { href: "/detect", label: "Image Authenticity", icon: ScanSearch, badge: "ViT+ELA", description: "SigLIP & ELA deepfake engine" },
             { href: "/protection", label: "Likeness Protection", icon: Fingerprint, badge: "Active", description: "Biometric identity monitor" },
-            { href: "/admin", label: "Operations Center", icon: LayoutDashboard, badge: "Live", description: "Cluster load & threat feed" },
+            { href: "/admin", label: "Operations Center", icon: Shield, badge: "Live", description: "Cluster load & threat feed" },
+            { href: "/developers", label: "Developer API", icon: Code2, description: "REST endpoints & SDK" },
         ],
     },
     {
         title: "Account",
         items: [
             { href: "/settings", label: "Workspace Settings", icon: Settings, description: "Cluster config & preferences" },
+            { href: "/pricing", label: "Plans & Quotas", icon: CreditCard, description: "Subscription & tier limits" },
         ],
     },
 ];
@@ -83,7 +89,7 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
         return () => { mounted = false; };
     }, []);
 
-    // Is this a public marketing route?
+    // Public marketing routes
     const isMarketingRoute = pathname === "/" || pathname === "/features" || pathname === "/how-it-works";
 
     // Close mobile nav on route change
@@ -115,40 +121,50 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
         }
     }, [mobileOpen, handleKeyDown]);
 
-    const isRouteActive = (href: string) => {
+    const isRouteActive = (href: string, itemLabel?: string) => {
         if (href === "/dashboard") return pathname === "/dashboard";
-        if (href === "/detect") return pathname === "/detect" || pathname === "/dashboard/analyze";
+        if (href === "/detect") {
+            if (itemLabel === "New Analysis" || itemLabel === "Image Authenticity") {
+                return pathname === "/detect" || pathname === "/dashboard/analyze";
+            }
+            return pathname === "/detect";
+        }
         if (href === "/history") return pathname === "/history" || pathname === "/dashboard/history";
         if (href === "/reports") return pathname === "/reports" || pathname === "/dashboard/reports";
         if (href === "/settings") return pathname === "/settings" || pathname === "/dashboard/settings";
+        if (href === "/protection") return pathname === "/protection";
+        if (href === "/admin") return pathname === "/admin";
+        if (href === "/developers") return pathname === "/developers";
+        if (href === "/pricing") return pathname === "/pricing";
         if (href === "/") return pathname === "/";
         return pathname.startsWith(href);
     };
 
-    // Breadcrumb title helper
+    // Breadcrumb page title helper
     const getPageTitle = () => {
-        if (pathname === "/dashboard") return "Workspace Overview";
+        if (pathname === "/dashboard") return "Overview";
         if (pathname === "/detect" || pathname === "/dashboard/analyze") return "Image Authenticity Verification";
         if (pathname === "/history" || pathname === "/dashboard/history") return "Forensic Scan History";
-        if (pathname === "/reports" || pathname === "/dashboard/reports") return "Forensic Reports & Certificates";
+        if (pathname === "/reports" || pathname === "/dashboard/reports") return "Reports & Dossiers";
         if (pathname === "/settings" || pathname === "/dashboard/settings") return "Workspace Settings";
         if (pathname === "/protection") return "Digital Likeness Protection";
         if (pathname === "/admin") return "Forensics Operations Center";
+        if (pathname === "/developers") return "Developer API & Documentation";
+        if (pathname === "/pricing") return "Plans & Quotas";
         if (pathname.startsWith("/report")) return "Verification Certificate";
         return "Workspace";
     };
 
     const getSectionTitle = () => {
         if (pathname === "/dashboard" || pathname === "/history" || pathname === "/reports" || pathname.startsWith("/dashboard")) return "Workspace";
-        if (pathname === "/detect" || pathname === "/protection") return "Forensic Tools";
-        if (pathname === "/admin") return "Forensic Tools";
-        if (pathname === "/settings") return "Account";
+        if (pathname === "/detect" || pathname === "/protection" || pathname === "/admin" || pathname === "/developers") return "Forensic Tools";
+        if (pathname === "/settings" || pathname === "/pricing") return "Account";
         if (pathname.startsWith("/report")) return "Reports";
         return "AIVerifySnap";
     };
 
     // =========================================================
-    // 1. PUBLIC MARKETING WEBSITE HEADER & NAVIGATION
+    // 1. PUBLIC MARKETING WEBSITE SHELL
     // (for /, /features, /how-it-works)
     // =========================================================
     if (isMarketingRoute) {
@@ -157,19 +173,19 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
                 {/* Top Announcement Bar */}
                 <aside
                     className="w-full bg-gradient-to-r from-[#e7af55] via-[#e57a40] to-[#e7af55] py-2 flex items-center justify-center text-white text-xs sm:text-sm font-medium gap-2 px-4 shadow-sm z-50 relative"
-                    aria-label="Announcement"
+                    aria-label="Platform Announcement"
                 >
-                    <span className="bg-white/20 px-2 py-0.5 rounded-md text-[11px] font-bold border border-white/30 backdrop-blur-sm">
+                    <span className="bg-white/20 px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold border border-white/30 backdrop-blur-sm uppercase tracking-wider font-mono">
                         SOVEREIGN PLATFORM V2.4
                     </span>
-                    <span className="hidden sm:inline">SigLIP Vision Transformer & Error Level Analysis Engine is Active</span>
+                    <span className="hidden sm:inline">SigLIP Vision Transformer & Error Level Analysis Engine Active</span>
                     <span className="sm:hidden">Forensic Engine Active</span>
-                    <Link href="/detect" className="underline font-bold hover:opacity-90 inline-flex items-center gap-1">
+                    <Link href="/detect" className="underline font-bold hover:opacity-90 inline-flex items-center gap-1 text-xs">
                         Try Detection &rarr;
                     </Link>
                 </aside>
 
-                {/* Public Marketing Header */}
+                {/* Public Marketing Header — Modern Editorial Minimalism */}
                 <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-background/85 border-b border-border/60">
                     <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
                         <div className="flex h-16 items-center justify-between">
@@ -179,7 +195,7 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
                                 className="flex items-center space-x-2 transition-opacity hover:opacity-80 focus-ring rounded-lg"
                                 aria-label="AIVerifySnap Home"
                             >
-                                <span className="font-bold tracking-tighter text-[24px] lowercase text-foreground">
+                                <span className="font-bold tracking-tighter text-[22px] lowercase text-foreground">
                                     ai<span className="font-light">verify</span>snap
                                 </span>
                             </Link>
@@ -189,7 +205,7 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
                                 <Link
                                     href="/features"
                                     className={cn(
-                                        "px-3.5 py-1.5 text-xs font-semibold tracking-wider uppercase rounded-full transition-colors focus-ring",
+                                        "px-3.5 py-1.5 text-xs font-semibold tracking-wider uppercase rounded-lg transition-colors focus-ring",
                                         pathname === "/features" ? "bg-muted text-foreground" : "text-foreground/75 hover:text-foreground hover:bg-muted"
                                     )}
                                 >
@@ -198,27 +214,33 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
                                 <Link
                                     href="/how-it-works"
                                     className={cn(
-                                        "px-3.5 py-1.5 text-xs font-semibold tracking-wider uppercase rounded-full transition-colors focus-ring",
+                                        "px-3.5 py-1.5 text-xs font-semibold tracking-wider uppercase rounded-lg transition-colors focus-ring",
                                         pathname === "/how-it-works" ? "bg-muted text-foreground" : "text-foreground/75 hover:text-foreground hover:bg-muted"
                                     )}
                                 >
                                     How It Works
                                 </Link>
+                                <Link
+                                    href="/pricing"
+                                    className="px-3.5 py-1.5 text-xs font-semibold tracking-wider uppercase rounded-lg transition-colors focus-ring text-foreground/75 hover:text-foreground hover:bg-muted"
+                                >
+                                    Pricing
+                                </Link>
+                                <Link
+                                    href="/developers"
+                                    className="px-3.5 py-1.5 text-xs font-semibold tracking-wider uppercase rounded-lg transition-colors focus-ring text-foreground/75 hover:text-foreground hover:bg-muted"
+                                >
+                                    API & Docs
+                                </Link>
                                 <a
                                     href={pathname === "/" ? "#forensics" : "/features"}
-                                    className="px-3.5 py-1.5 text-xs font-semibold tracking-wider uppercase rounded-full text-foreground/75 hover:text-foreground hover:bg-muted transition-colors focus-ring"
+                                    className="px-3.5 py-1.5 text-xs font-semibold tracking-wider uppercase rounded-lg text-foreground/75 hover:text-foreground hover:bg-muted transition-colors focus-ring"
                                 >
-                                    Forensic Engine
-                                </a>
-                                <a
-                                    href={pathname === "/" ? "#privacy" : "/#privacy"}
-                                    className="px-3.5 py-1.5 text-xs font-semibold tracking-wider uppercase rounded-full text-foreground/75 hover:text-foreground hover:bg-muted transition-colors focus-ring"
-                                >
-                                    Transparency
+                                    Forensics
                                 </a>
                                 <a
                                     href={pathname === "/" ? "#faq" : "/#faq"}
-                                    className="px-3.5 py-1.5 text-xs font-semibold tracking-wider uppercase rounded-full text-foreground/75 hover:text-foreground hover:bg-muted transition-colors focus-ring"
+                                    className="px-3.5 py-1.5 text-xs font-semibold tracking-wider uppercase rounded-lg text-foreground/75 hover:text-foreground hover:bg-muted transition-colors focus-ring"
                                 >
                                     FAQ
                                 </a>
@@ -232,13 +254,13 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
                                     {isLoaded && !isSignedIn && (
                                         <>
                                             <SignInButton mode="modal">
-                                                <button className="px-4 py-2 text-xs font-medium rounded-full bg-muted text-foreground hover:bg-muted/80 transition-colors focus-ring">
+                                                <button className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-muted text-foreground hover:bg-muted/80 transition-colors focus-ring">
                                                     Sign In
                                                 </button>
                                             </SignInButton>
                                             <Link
                                                 href="/detect"
-                                                className="px-5 py-2 text-xs font-semibold rounded-full bg-foreground text-background hover:bg-foreground/90 transition-all shadow-sm focus-ring"
+                                                className="px-4 py-1.5 text-xs font-semibold rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-all shadow-sm focus-ring"
                                             >
                                                 Analyze an Image
                                             </Link>
@@ -248,7 +270,7 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
                                         <>
                                             <Link
                                                 href="/dashboard"
-                                                className="px-5 py-2 text-xs font-semibold rounded-full bg-foreground text-background hover:bg-foreground/90 transition-all shadow-sm focus-ring flex items-center gap-1.5"
+                                                className="px-4 py-1.5 text-xs font-semibold rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-all shadow-sm focus-ring flex items-center gap-1.5"
                                             >
                                                 <span>Open Dashboard</span>
                                                 <ArrowUpRight className="w-3.5 h-3.5" />
@@ -307,7 +329,7 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
                                         href="/features"
                                         onClick={() => setMobileOpen(false)}
                                         className={cn(
-                                            "block px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
+                                            "block px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors",
                                             pathname === "/features" ? "bg-muted text-foreground font-bold" : "hover:bg-muted text-foreground"
                                         )}
                                     >
@@ -317,30 +339,37 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
                                         href="/how-it-works"
                                         onClick={() => setMobileOpen(false)}
                                         className={cn(
-                                            "block px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
+                                            "block px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors",
                                             pathname === "/how-it-works" ? "bg-muted text-foreground font-bold" : "hover:bg-muted text-foreground"
                                         )}
                                     >
                                         How It Works
                                     </Link>
+                                    <Link
+                                        href="/pricing"
+                                        onClick={() => setMobileOpen(false)}
+                                        className="block px-3.5 py-2.5 rounded-xl text-sm font-medium hover:bg-muted text-foreground transition-colors"
+                                    >
+                                        Pricing
+                                    </Link>
+                                    <Link
+                                        href="/developers"
+                                        onClick={() => setMobileOpen(false)}
+                                        className="block px-3.5 py-2.5 rounded-xl text-sm font-medium hover:bg-muted text-foreground transition-colors"
+                                    >
+                                        API & Docs
+                                    </Link>
                                     <a
                                         href={pathname === "/" ? "#forensics" : "/features"}
                                         onClick={() => setMobileOpen(false)}
-                                        className="block px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-muted text-foreground transition-colors"
+                                        className="block px-3.5 py-2.5 rounded-xl text-sm font-medium hover:bg-muted text-foreground transition-colors"
                                     >
-                                        Forensic Engine
-                                    </a>
-                                    <a
-                                        href={pathname === "/" ? "#privacy" : "/#privacy"}
-                                        onClick={() => setMobileOpen(false)}
-                                        className="block px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-muted text-foreground transition-colors"
-                                    >
-                                        Privacy & Transparency
+                                        Forensic Science
                                     </a>
                                     <a
                                         href={pathname === "/" ? "#faq" : "/#faq"}
                                         onClick={() => setMobileOpen(false)}
-                                        className="block px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-muted text-foreground transition-colors"
+                                        className="block px-3.5 py-2.5 rounded-xl text-sm font-medium hover:bg-muted text-foreground transition-colors"
                                     >
                                         FAQ
                                     </a>
@@ -382,7 +411,7 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
                         <h3 className="text-2xl sm:text-3xl font-serif text-foreground max-w-xl mx-auto text-balance">
                             Build the future of digital trust with AIVerifySnap.
                         </h3>
-                        <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
+                        <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold font-mono">
                             Sovereign deepfake verification & forensic ledger
                         </p>
                         <div className="pt-8 border-t border-border/50 flex flex-col sm:flex-row items-center justify-between text-xs text-muted-foreground gap-4">
@@ -392,7 +421,8 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
                             <div className="flex flex-wrap items-center justify-center gap-6">
                                 <Link href="/features" className="hover:text-foreground transition-colors">Features</Link>
                                 <Link href="/how-it-works" className="hover:text-foreground transition-colors">How It Works</Link>
-                                <Link href="/features" className="hover:text-foreground transition-colors">Forensic Engine</Link>
+                                <Link href="/pricing" className="hover:text-foreground transition-colors">Pricing</Link>
+                                <Link href="/developers" className="hover:text-foreground transition-colors">API & Docs</Link>
                                 <Link href="/#privacy" className="hover:text-foreground transition-colors">Privacy</Link>
                                 <Link href="/#faq" className="hover:text-foreground transition-colors">FAQ</Link>
                                 <Link href="/dashboard" className="text-foreground font-semibold hover:underline">Workspace Dashboard</Link>
@@ -407,11 +437,11 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
 
     // =========================================================
     // 2. ENTERPRISE APPLICATION DASHBOARD SHELL
-    // (for /dashboard, /detect, /history, /protection, /admin, /report/*)
+    // (for /dashboard, /detect, /history, /protection, /admin, /reports, /settings, /developers, /pricing)
     // =========================================================
     return (
         <div className="min-h-screen flex bg-background text-foreground antialiased selection:bg-foreground selection:text-background">
-            {/* Desktop Persistent Sidebar */}
+            {/* Desktop Persistent Sidebar — Enterprise SaaS Minimalism */}
             <aside
                 className={cn(
                     "hidden lg:flex flex-col border-r border-border bg-card/85 backdrop-blur-xl transition-all duration-300 z-30 sticky top-0 h-screen shrink-0",
@@ -454,13 +484,13 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
                     {navSections.map((section) => (
                         <div key={section.title} className="space-y-1">
                             {!sidebarCollapsed && (
-                                <h3 className="px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 mb-2">
+                                <h3 className="px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 mb-2 font-mono">
                                     {section.title}
                                 </h3>
                             )}
                             <div className="space-y-0.5">
                                 {section.items.map((item) => {
-                                    const active = isRouteActive(item.href);
+                                    const active = isRouteActive(item.href, item.label);
                                     const Icon = item.icon;
 
                                     return (
@@ -471,7 +501,7 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
                                                 "group flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 focus-ring relative",
                                                 active
                                                     ? "bg-foreground text-background shadow-sm"
-                                                    : "text-foreground/70 hover:text-foreground hover:bg-muted"
+                                                    : "text-foreground/75 hover:text-foreground hover:bg-muted"
                                             )}
                                             title={sidebarCollapsed ? `${item.label}: ${item.description}` : undefined}
                                             aria-current={active ? "page" : undefined}
@@ -520,14 +550,14 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
 
                 {/* Inference Node Health Status Indicator */}
                 {!sidebarCollapsed ? (
-                    <div className="p-3 mx-3 mb-2 rounded-2xl bg-muted/40 border border-border/60 space-y-2">
+                    <div className="p-3 mx-3 mb-2 rounded-xl bg-muted/40 border border-border/60 space-y-1.5">
                         <div className="flex items-center justify-between text-[11px]">
                             <span className="font-semibold text-foreground flex items-center gap-1.5">
                                 <Cpu className="w-3.5 h-3.5 text-primary" />
                                 <span>Forensics Cluster</span>
                             </span>
                             {healthStatus?.status === "UP" ? (
-                                <span className="flex items-center gap-1 text-green-500 font-mono font-bold text-[10px]">
+                                <span className="flex items-center gap-1 text-green-600 dark:text-green-400 font-mono font-bold text-[10px]">
                                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                                     ONLINE
                                 </span>
@@ -546,7 +576,7 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
                             {healthStatus?.status === "UP"
                                 ? `SigLIP ViT + ELA models active. Latency: ${healthStatus.latencyMs}ms`
                                 : healthStatus
-                                ? "Inference service unreachable. Check backend."
+                                ? "Inference service unreachable. Verify backend."
                                 : "Connecting to analysis node..."}
                         </p>
                     </div>
@@ -585,9 +615,9 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
                 </div>
             </aside>
 
-            {/* Main Application Area */}
+            {/* Main Application Content Area */}
             <div className="flex-1 flex flex-col min-w-0 min-h-screen">
-                {/* Top Workspace Header */}
+                {/* Top Workspace Header Bar */}
                 <header className="sticky top-0 z-20 h-16 border-b border-border/70 bg-background/85 backdrop-blur-xl px-4 sm:px-6 flex items-center justify-between gap-4">
                     {/* Left: Mobile Toggle + Breadcrumb */}
                     <div className="flex items-center gap-3 min-w-0">
@@ -600,28 +630,28 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
                             <Menu className="w-5 h-5" />
                         </button>
 
-                        <div className="flex items-center gap-2 text-xs truncate">
+                        <div className="flex items-center gap-1.5 text-xs truncate">
                             <span className="text-muted-foreground hidden sm:inline">{getSectionTitle()}</span>
-                            <span className="text-muted-foreground/60 hidden sm:inline">/</span>
+                            <ChevronBreadcrumb className="w-3.5 h-3.5 text-muted-foreground/60 hidden sm:inline" />
                             <h1 className="font-bold text-foreground truncate text-sm sm:text-base font-sans">
                                 {getPageTitle()}
                             </h1>
                         </div>
                     </div>
 
-                    {/* Right: Quick actions, Telemetry Pill, Theme & Auth */}
+                    {/* Right: Quick actions, Live Telemetry Pill, Theme & Auth */}
                     <div className="flex items-center gap-2.5 shrink-0">
                         {/* Live Inference Pill */}
-                        <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-card border border-border text-[11px] font-medium text-muted-foreground shadow-sm">
-                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                        <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-md bg-card border border-border text-[11px] font-mono text-muted-foreground shadow-sm">
+                            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                             <span>SigLIP Engine: Active</span>
                         </div>
 
-                        {/* Quick New Scan Button (when not already on /detect) */}
+                        {/* Quick New Scan Button (when not on /detect) */}
                         {pathname !== "/detect" && (
                             <Link
                                 href="/detect"
-                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-foreground text-background text-xs font-semibold hover:bg-foreground/90 transition-all shadow-sm focus-ring"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-foreground text-background text-xs font-semibold hover:bg-foreground/90 transition-all shadow-sm focus-ring"
                             >
                                 <PlusCircle className="w-3.5 h-3.5" />
                                 <span className="hidden sm:inline">New Analysis</span>
@@ -653,17 +683,14 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
             {/* Mobile Workspace Drawer */}
             {mobileOpen && (
                 <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Mobile Navigation">
-                    {/* Backdrop */}
                     <div
                         className="fixed inset-0 bg-background/80 backdrop-blur-sm"
                         onClick={() => setMobileOpen(false)}
                         aria-hidden="true"
                     />
 
-                    {/* Drawer Panel */}
                     <div className="fixed inset-y-0 left-0 w-full max-w-xs bg-card border-r border-border p-5 shadow-2xl flex flex-col justify-between animate-in slide-in-from-left duration-200">
                         <div className="space-y-6">
-                            {/* Drawer Header */}
                             <div className="flex items-center justify-between pb-4 border-b border-border">
                                 <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="font-bold text-lg tracking-tight lowercase">
                                     ai<span className="font-light">verify</span>snap
@@ -677,16 +704,15 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
                                 </button>
                             </div>
 
-                            {/* Drawer Nav Links */}
                             <div className="space-y-5 overflow-y-auto max-h-[70vh]">
                                 {navSections.map((sec) => (
                                     <div key={sec.title} className="space-y-1">
-                                        <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                                        <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 font-mono">
                                             {sec.title}
                                         </p>
                                         <div className="space-y-0.5">
                                             {sec.items.map((item) => {
-                                                const active = isRouteActive(item.href);
+                                                const active = isRouteActive(item.href, item.label);
                                                 const Icon = item.icon;
 
                                                 return (
@@ -697,7 +723,7 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
                                                         className={cn(
                                                             "flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors",
                                                             active
-                                                                ? "bg-foreground text-background"
+                                                                ? "bg-foreground text-background font-semibold"
                                                                 : "text-foreground/80 hover:bg-muted hover:text-foreground"
                                                         )}
                                                     >
@@ -708,7 +734,7 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
                                                         {item.badge && (
                                                             <span
                                                                 className={cn(
-                                                                    "text-[10px] px-1.5 py-0.2 rounded-full font-mono",
+                                                                    "text-[10px] px-1.5 py-0.5 rounded-full font-mono",
                                                                     active ? "bg-background/20 text-background" : "bg-muted text-muted-foreground"
                                                                 )}
                                                             >
@@ -735,7 +761,6 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
                             </div>
                         </div>
 
-                        {/* Drawer Footer */}
                         <div className="pt-4 border-t border-border space-y-3">
                             <div className="flex items-center justify-between">
                                 <span className="text-xs text-muted-foreground font-medium">Appearance</span>

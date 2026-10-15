@@ -129,8 +129,8 @@ export default function ReportPage() {
     if (notFound && !realItem) {
         return (
             <div className="min-h-[calc(100vh-4rem)] p-8 flex flex-col items-center justify-center">
-                <div className="max-w-md w-full bg-card border border-border p-8 rounded-3xl text-center space-y-4 shadow-sm">
-                    <div className="w-14 h-14 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
+                <div className="max-w-md w-full bg-card border border-border p-8 rounded-2xl text-center space-y-4 shadow-sm">
+                    <div className="w-14 h-14 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mx-auto border border-destructive/20">
                         <AlertCircle className="w-7 h-7" />
                     </div>
                     <h2 className="text-xl font-bold text-foreground">Analysis Record Not Found</h2>
@@ -190,22 +190,22 @@ export default function ReportPage() {
                 <motion.div
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-card border-2 border-border shadow-xl p-6 sm:p-10 md:p-12 rounded-[2.5rem] space-y-8 relative overflow-hidden print:border-none print:shadow-none print:p-4 print:rounded-none"
+                    className="bg-card border border-border/90 shadow-lg p-6 sm:p-10 md:p-12 rounded-2xl space-y-8 relative overflow-hidden print:border-none print:shadow-none print:p-4 print:rounded-none"
                 >
                     {/* Watermark */}
-                    <ShieldCheck className="absolute -bottom-16 -right-16 w-80 h-80 text-foreground/[0.03] z-0 pointer-events-none select-none" />
+                    <ShieldCheck className="absolute -bottom-16 -right-16 w-80 h-80 text-foreground/[0.02] z-0 pointer-events-none select-none" />
 
                     {/* Report Header */}
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-border pb-6 relative z-10 gap-4">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-border/80 pb-6 relative z-10 gap-4">
                         <div className="flex items-center gap-3">
-                            <div className="p-2.5 bg-primary/10 rounded-2xl text-primary">
+                            <div className="p-2.5 bg-primary/10 rounded-xl text-primary border border-primary/20">
                                 <ShieldCheck className="w-8 h-8" />
                             </div>
                             <div>
                                 <h2 className="text-xl font-black uppercase tracking-widest text-foreground font-sans">
                                     AIVerifySnap
                                 </h2>
-                                <p className="text-[11px] text-muted-foreground uppercase tracking-widest font-semibold">
+                                <p className="text-[11px] text-muted-foreground uppercase tracking-widest font-mono font-semibold">
                                     Automated Image Analysis Report
                                 </p>
                             </div>

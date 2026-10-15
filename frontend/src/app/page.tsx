@@ -25,34 +25,34 @@ const containerVariants = {
 };
 
 const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const } },
+    hidden: { opacity: 0, y: 16 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] as const } },
 };
 
 const faqs = [
     {
         question: "What does AIVerifySnap analyze?",
-        answer: "AIVerifySnap inspects digital photographs for signs of synthetic generation from diffusion models (such as Midjourney, DALL-E, Stable Diffusion) and generative vision transformers, as well as digital image manipulation and splicing via localized JPEG compression error analysis."
+        answer: "AIVerifySnap inspects digital photographs for patterns associated with synthetic generation (diffusion models and vision transformers) as well as localized compression anomalies that indicate potential manipulation, splicing, or re-compression."
     },
     {
-        question: "How do I upload an image?",
+        question: "How do I upload an image for verification?",
         answer: "Navigate to the New Analysis workspace, then drag and drop any JPEG, PNG, or WebP photograph (up to 10 MB) into the dropzone, or click 'Select File'. The image is prepared and streamed directly to our forensic inference pipeline."
     },
     {
         question: "What does an AI detection result mean?",
-        answer: "The verdict indicates the statistical probability that high-frequency frequency features and visual attention embeddings align with known synthetic training distributions. A classification of 'AI Generated' reflects neural generative patterns, whereas 'Authentic' reflects camera sensor noise and natural optical characteristics."
+        answer: "The verdict reflects the statistical probability that high-frequency frequency features and visual attention embeddings align with known synthetic training distributions. A classification of 'AI Generated' reflects neural generative patterns, whereas 'Real' reflects camera sensor noise and natural optical characteristics."
     },
     {
         question: "What is Error Level Analysis (ELA)?",
-        answer: "Error Level Analysis intentional re-saves the image at a known JPEG quantization level and computes the pixel-level difference. Areas with distinct compression error deltas indicate potential editing, splicing, or synthetic generation."
+        answer: "Error Level Analysis intentionally re-compresses the image at a known JPEG quantization level (typically 90%) and computes the absolute pixel-level difference. Areas with distinct compression error deltas indicate potential editing, splicing, or synthetic generation."
     },
     {
         question: "Are the results legally definitive?",
-        answer: "No automated AI classifier can provide an absolute guarantee of authenticity. AIVerifySnap is designed as a forensic decision-support platform, providing verifiable signal evidence (ELA mean, standard deviation, Grad-CAM attention) that human examiners can cross-reference."
+        answer: "No automated AI classifier can provide an absolute guarantee of authenticity. AIVerifySnap is engineered as a scientific decision-support system, providing reproducible forensic indicators (ELA mean, standard deviation, Grad-CAM attention) that human examiners can cross-reference."
     },
     {
         question: "Can I download an analysis report?",
-        answer: "Yes. Every completed scan generates a verification ledger record with an official verification certificate, cryptographic SHA-256 hash, and exportable JSON technical dossier."
+        answer: "Yes. Every completed scan generates an official forensic report with cryptographic SHA-256 digest, ELA deviation metrics, and exportable JSON technical dossier."
     }
 ];
 
@@ -66,57 +66,54 @@ export default function PublicLandingPage() {
 
     return (
         <div className="flex flex-col items-center justify-center bg-background min-h-screen relative overflow-hidden">
-            {/* Ambient background lights */}
+            {/* Ambient Background Glows */}
             <div className="subtle-blue-light top-0 left-[-200px]" aria-hidden="true" />
             <div className="subtle-orange-light top-[400px] right-[-200px]" aria-hidden="true" />
 
             {/* ========================================================= */}
-            {/* SECTION B: HERO SECTION */}
+            {/* HERO SECTION — Modern Editorial Minimalism */}
             {/* ========================================================= */}
-            <section className="relative w-full px-4 sm:px-6 lg:px-8 pt-12 pb-20 sm:pt-20 sm:pb-28 lg:pt-28 lg:pb-36 flex flex-col items-center justify-center overflow-hidden">
-                {/* Soft Spotlight */}
-                <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#e7af55]/5 rounded-full blur-[120px] -z-10 pointer-events-none" aria-hidden="true" />
-
+            <section className="relative w-full px-4 sm:px-6 lg:px-8 pt-16 pb-20 sm:pt-24 sm:pb-32 lg:pt-32 lg:pb-36 flex flex-col items-center justify-center text-center overflow-hidden">
                 <motion.div
-                    className="text-center space-y-6 max-w-[920px] mx-auto z-10"
+                    className="max-w-[960px] mx-auto space-y-8 z-10"
                     variants={containerVariants}
                     initial="hidden"
                     animate="visible"
                 >
-                    <motion.div variants={itemVariants}>
-                        <div className="mb-6 sm:mb-8">
-                            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-4 py-1.5 text-xs sm:text-sm font-semibold text-foreground backdrop-blur-md shadow-sm">
-                                <span className="w-2 h-2 rounded-full bg-[#e57a40] animate-pulse" />
-                                Sovereign Digital Forensics & Media Verification
-                            </span>
-                        </div>
-                        <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-serif text-foreground text-balance leading-[1.08] mb-4 tracking-tight">
-                            Know What&apos;s Behind <br />
-                            <span className="text-foreground/85 font-serif">the Image.</span>
-                        </h1>
+                    {/* Editorial Kicker Badge */}
+                    <motion.div variants={itemVariants} className="flex justify-center">
+                        <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/80 px-4 py-1.5 text-xs font-semibold text-foreground backdrop-blur-md shadow-sm">
+                            <span className="w-2 h-2 rounded-full bg-[#e57a40] animate-pulse" />
+                            <span>Sovereign Digital Forensics &middot; Media Verification</span>
+                        </span>
                     </motion.div>
 
-                    <motion.p
-                        className="text-base sm:text-xl md:text-2xl text-muted-foreground text-balance max-w-2xl mx-auto font-normal leading-relaxed"
-                        variants={itemVariants}
-                    >
-                        Analyze images for signs of AI generation and potential manipulation using the forensic analysis capabilities available in AIVerifySnap.
-                    </motion.p>
+                    {/* Headline */}
+                    <motion.div variants={itemVariants} className="space-y-4">
+                        <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-serif text-foreground text-balance leading-[1.05] tracking-tight">
+                            Know What&apos;s Behind <br />
+                            <span className="font-serif italic text-foreground/80">the Image.</span>
+                        </h1>
+                        <p className="text-base sm:text-xl md:text-2xl text-muted-foreground text-balance max-w-2xl mx-auto font-normal leading-relaxed pt-2">
+                            Investigate AI-generated imagery and potential image manipulation using the analysis and forensic tools available in AIVerifySnap.
+                        </p>
+                    </motion.div>
 
+                    {/* Actions */}
                     <motion.div
-                        className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-4"
+                        className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2"
                         variants={itemVariants}
                     >
                         <Link
                             href="/detect"
-                            className="w-full sm:w-auto px-8 py-4 bg-foreground text-background font-semibold rounded-full hover:bg-foreground/90 transition-all duration-200 active:scale-[0.98] text-base text-center focus-ring shadow-md flex items-center justify-center gap-2"
+                            className="w-full sm:w-auto px-8 py-3.5 bg-foreground text-background font-semibold rounded-xl hover:bg-foreground/90 transition-all duration-200 active:scale-[0.98] text-sm text-center focus-ring shadow-sm flex items-center justify-center gap-2"
                         >
-                            <PlusCircle className="w-5 h-5" />
+                            <PlusCircle className="w-4 h-4" />
                             <span>Analyze an Image</span>
                         </Link>
                         <a
                             href="#features"
-                            className="w-full sm:w-auto px-8 py-4 bg-card border border-border text-foreground font-semibold rounded-full hover:bg-muted transition-all duration-200 active:scale-[0.98] text-base text-center focus-ring shadow-sm flex items-center justify-center gap-2"
+                            className="w-full sm:w-auto px-8 py-3.5 bg-card border border-border text-foreground font-semibold rounded-xl hover:bg-muted transition-all duration-200 active:scale-[0.98] text-sm text-center focus-ring shadow-sm flex items-center justify-center gap-2"
                         >
                             <span>Explore Features</span>
                             <ArrowRight className="w-4 h-4 text-muted-foreground" />
@@ -125,103 +122,124 @@ export default function PublicLandingPage() {
                 </motion.div>
 
                 {/* ========================================================= */}
-                {/* SECTION C: PRODUCT PREVIEW / INTERACTIVE DEMONSTRATION */}
+                {/* INTERACTIVE SPECIMEN PREVIEW DECK */}
                 {/* ========================================================= */}
                 <motion.div
-                    className="mt-14 sm:mt-20 max-w-5xl w-full z-10"
-                    initial={{ opacity: 0, y: 30 }}
+                    className="mt-14 sm:mt-20 max-w-5xl w-full z-10 px-2 sm:px-0"
+                    initial={{ opacity: 0, y: 24 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.25, duration: 0.7 }}
                 >
-                    <div className="bg-card border-2 border-border/80 rounded-[2.5rem] p-5 sm:p-8 shadow-2xl relative overflow-hidden">
-                        {/* Demonstration Badge Header */}
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-border/60 gap-3 mb-6">
+                    <div className="bg-card border border-border/80 rounded-2xl p-5 sm:p-7 shadow-xl relative overflow-hidden">
+                        {/* Header Status Bar */}
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-border/70 gap-3 mb-6">
                             <div className="flex items-center gap-2.5">
-                                <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
-                                <span className="font-mono text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                                    Forensic Inspection Demonstration
+                                <span className="w-2 h-2 rounded-full bg-[#e57a40] animate-pulse" />
+                                <span className="font-mono text-xs font-semibold uppercase tracking-wider text-foreground">
+                                    Specimen Analysis Demonstration
                                 </span>
                             </div>
-                            <span className="text-[11px] font-mono px-2.5 py-1 rounded-full bg-muted text-muted-foreground border border-border/60">
-                                Illustrative Demonstration &middot; Nonfunctional Preview
+                            <span className="text-[11px] font-mono px-2.5 py-1 rounded-md bg-muted text-muted-foreground border border-border/60">
+                                Illustrative Demonstration &middot; Live Engine in Workspace
                             </span>
                         </div>
 
                         {/* Interactive Preview Canvas */}
                         <div className="grid md:grid-cols-12 gap-6 items-center">
-                            {/* Visual Preview Frame (7 cols) */}
+                            {/* Visual Specimen Viewer (7 cols) */}
                             <div className="md:col-span-7 space-y-3">
-                                <div className="flex items-center gap-1.5 bg-muted/60 p-1 rounded-2xl w-fit text-xs font-semibold">
+                                <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg w-fit text-xs font-medium">
                                     <button
                                         type="button"
                                         onClick={() => setPreviewMode("original")}
-                                        className={`px-3 py-1.5 rounded-xl transition-all ${previewMode === "original" ? "bg-background shadow text-foreground" : "text-muted-foreground"}`}
+                                        className={`px-3 py-1.5 rounded-md transition-all ${
+                                            previewMode === "original"
+                                                ? "bg-card shadow-sm text-foreground font-semibold"
+                                                : "text-muted-foreground hover:text-foreground"
+                                        }`}
                                     >
                                         Original Frame
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setPreviewMode("ela")}
-                                        className={`px-3 py-1.5 rounded-xl transition-all ${previewMode === "ela" ? "bg-background shadow text-foreground" : "text-muted-foreground"}`}
+                                        className={`px-3 py-1.5 rounded-md transition-all ${
+                                            previewMode === "ela"
+                                                ? "bg-card shadow-sm text-foreground font-semibold"
+                                                : "text-muted-foreground hover:text-foreground"
+                                        }`}
                                     >
                                         ELA Recompression
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setPreviewMode("heatmap")}
-                                        className={`px-3 py-1.5 rounded-xl transition-all ${previewMode === "heatmap" ? "bg-background shadow text-foreground" : "text-muted-foreground"}`}
+                                        className={`px-3 py-1.5 rounded-md transition-all ${
+                                            previewMode === "heatmap"
+                                                ? "bg-card shadow-sm text-foreground font-semibold"
+                                                : "text-muted-foreground hover:text-foreground"
+                                        }`}
                                     >
                                         Attention Map
                                     </button>
                                 </div>
 
-                                <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-neutral-900 border border-border flex items-center justify-center">
-                                    {/* Mock Subject Face */}
+                                <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-neutral-900 border border-border flex items-center justify-center">
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img
                                         src="https://images.unsplash.com/photo-1544365558-35aa4afcf11f?w=600&q=80"
                                         alt="Demonstration Subject"
-                                        className={`w-full h-full object-cover transition-all duration-300 ${previewMode === "ela" ? "filter contrast-200 brightness-50 invert" : previewMode === "heatmap" ? "opacity-60" : ""}`}
+                                        className={`w-full h-full object-cover transition-all duration-300 ${
+                                            previewMode === "ela"
+                                                ? "filter contrast-200 brightness-50 invert"
+                                                : previewMode === "heatmap"
+                                                ? "opacity-60"
+                                                : ""
+                                        }`}
                                     />
                                     {previewMode === "heatmap" && (
                                         <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/40 via-yellow-400/40 to-red-500/60 mix-blend-overlay filter blur-xl pointer-events-none" />
                                     )}
-                                    <div className="absolute bottom-3 left-3 px-3 py-1 rounded-full bg-background/80 backdrop-blur-md text-[11px] font-mono text-foreground border border-border shadow-sm">
-                                        {previewMode === "original" ? "Raw Input: camera_portrait.png" : previewMode === "ela" ? "ELA Residual Delta (Quantization error)" : "SigLIP Transformer Feature Activation"}
+                                    <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-md bg-background/85 backdrop-blur-md text-[11px] font-mono text-foreground border border-border shadow-sm">
+                                        {previewMode === "original"
+                                            ? "Raw Subject: portrait_specimen.png"
+                                            : previewMode === "ela"
+                                            ? "ELA Residual Delta (Quantization: 90%)"
+                                            : "SigLIP Transformer Feature Activation"}
                                     </div>
                                 </div>
                             </div>
 
                             {/* Evidence Summary Column (5 cols) */}
-                            <div className="md:col-span-5 space-y-4">
-                                <div className="p-5 rounded-2xl bg-muted/40 border border-border/60 space-y-3">
+                            <div className="md:col-span-5 space-y-4 text-left">
+                                <div className="p-5 rounded-xl bg-muted/30 border border-border/70 space-y-2.5">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                        <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-muted-foreground">
                                             Sample Verification Verdict
                                         </span>
                                         <ResultBadge status="AI Generated" size="sm" />
                                     </div>
 
-                                    <div className="text-3xl font-black font-mono tracking-tight text-destructive">
+                                    <div className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-destructive">
                                         98.4%
                                     </div>
-                                    <p className="text-xs text-muted-foreground">
+                                    <p className="text-xs text-muted-foreground leading-relaxed">
                                         Confidence metric calculated via SigLIP Vision Transformer embedding classification.
                                     </p>
                                 </div>
 
                                 <div className="space-y-2 text-xs">
-                                    <div className="flex justify-between p-2.5 rounded-xl bg-card border border-border/50">
+                                    <div className="flex justify-between items-center p-2.5 rounded-lg bg-card border border-border/60">
                                         <span className="text-muted-foreground">ELA Mean Residual</span>
                                         <span className="font-mono font-bold text-foreground">0.0384</span>
                                     </div>
-                                    <div className="flex justify-between p-2.5 rounded-xl bg-card border border-border/50">
+                                    <div className="flex justify-between items-center p-2.5 rounded-lg bg-card border border-border/60">
                                         <span className="text-muted-foreground">ELA Std Deviation</span>
                                         <span className="font-mono font-bold text-foreground">0.0521</span>
                                     </div>
-                                    <div className="flex justify-between p-2.5 rounded-xl bg-card border border-border/50">
+                                    <div className="flex justify-between items-center p-2.5 rounded-lg bg-card border border-border/60">
                                         <span className="text-muted-foreground">Inference Engine</span>
-                                        <span className="font-bold text-foreground">SigLIP ViT Ensemble</span>
+                                        <span className="font-semibold text-foreground">SigLIP ViT Ensemble</span>
                                     </div>
                                 </div>
 
@@ -230,7 +248,7 @@ export default function PublicLandingPage() {
                                     className="w-full py-3 rounded-xl bg-foreground text-background text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-all text-center flex items-center justify-center gap-2 shadow-sm"
                                 >
                                     <span>Run Real Image Verification</span>
-                                    <ArrowRight className="w-4 h-4" />
+                                    <ArrowRight className="w-3.5 h-3.5" />
                                 </Link>
                             </div>
                         </div>
@@ -239,7 +257,24 @@ export default function PublicLandingPage() {
             </section>
 
             {/* ========================================================= */}
-            {/* SECTION D: FEATURES SECTION */}
+            {/* EDITORIAL STATEMENT / PRODUCT PHILOSOPHY */}
+            {/* ========================================================= */}
+            <section className="w-full py-16 sm:py-24 border-t border-border/60 bg-card/40 relative z-10">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-4">
+                    <span className="text-xs uppercase font-bold tracking-widest text-[#e57a40] font-mono">
+                        Scientific Integrity
+                    </span>
+                    <blockquote className="text-2xl sm:text-3xl md:text-4xl font-serif text-foreground text-balance leading-snug">
+                        &ldquo;The boundary between authentic photographic capture and synthetic generation is narrowing. AIVerifySnap provides reproducible forensic scrutiny — combining deep neural embeddings with mathematical compression physics.&rdquo;
+                    </blockquote>
+                    <p className="text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto pt-2">
+                        Designed for journalists, digital investigators, copyright holders, and security teams needing verifiable media intelligence.
+                    </p>
+                </div>
+            </section>
+
+            {/* ========================================================= */}
+            {/* FEATURES SECTION — Verified Capabilities */}
             {/* ========================================================= */}
             <section id="features" className="w-full py-20 sm:py-28 border-t border-border/60 bg-muted/20 relative z-10">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-12">
@@ -290,13 +325,13 @@ export default function PublicLandingPage() {
                         ].map((feat, i) => (
                             <div
                                 key={i}
-                                className="p-6 sm:p-7 rounded-3xl bg-card border border-border shadow-sm flex flex-col justify-between space-y-4 hover:border-foreground/30 hover:shadow-md transition-all"
+                                className="p-6 rounded-xl bg-card border border-border shadow-sm flex flex-col justify-between space-y-4 hover:border-foreground/25 hover:shadow-md transition-all"
                             >
                                 <div className="space-y-3">
-                                    <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-                                        <feat.icon className="w-6 h-6" />
+                                    <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                                        <feat.icon className="w-5 h-5" />
                                     </div>
-                                    <h3 className="text-lg font-bold text-foreground font-sans tracking-tight">
+                                    <h3 className="text-base font-bold text-foreground font-sans tracking-tight">
                                         {feat.title}
                                     </h3>
                                     <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
@@ -310,7 +345,7 @@ export default function PublicLandingPage() {
             </section>
 
             {/* ========================================================= */}
-            {/* SECTION E: HOW IT WORKS */}
+            {/* HOW IT WORKS SECTION */}
             {/* ========================================================= */}
             <section id="how-it-works" className="w-full py-20 sm:py-28 relative z-10">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-12">
@@ -326,7 +361,7 @@ export default function PublicLandingPage() {
                         </p>
                     </div>
 
-                    <div className="grid md:grid-cols-3 gap-8 relative">
+                    <div className="grid md:grid-cols-3 gap-6 relative">
                         {[
                             {
                                 step: "01",
@@ -346,12 +381,12 @@ export default function PublicLandingPage() {
                         ].map((step, idx) => (
                             <div
                                 key={idx}
-                                className="p-7 rounded-3xl bg-card border border-border shadow-sm space-y-4 relative"
+                                className="p-6 rounded-xl bg-card border border-border shadow-sm space-y-3 relative"
                             >
-                                <span className="font-mono text-3xl font-black text-primary/20">
+                                <span className="font-mono text-2xl font-bold text-muted-foreground/30">
                                     {step.step}
                                 </span>
-                                <h3 className="text-lg font-bold text-foreground font-sans">
+                                <h3 className="text-base font-bold text-foreground font-sans">
                                     {step.title}
                                 </h3>
                                 <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
@@ -361,7 +396,7 @@ export default function PublicLandingPage() {
                         ))}
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-muted/40 border border-border/60 text-center max-w-2xl mx-auto text-xs text-muted-foreground">
+                    <div className="p-4 rounded-xl bg-muted/40 border border-border/60 text-center max-w-2xl mx-auto text-xs text-muted-foreground">
                         <p>
                             Model predictions and forensic indicators assist with technical media assessment, but do not provide an infallible guarantee of an image&apos;s real-world authenticity.
                         </p>
@@ -370,7 +405,7 @@ export default function PublicLandingPage() {
             </section>
 
             {/* ========================================================= */}
-            {/* SECTION F: FORENSIC ANALYSIS & TRANSPARENCY */}
+            {/* FORENSIC SCIENCE: PREDICTION VS PROOF */}
             {/* ========================================================= */}
             <section id="forensics" className="w-full py-20 sm:py-28 bg-muted/30 border-t border-border/60 relative z-10">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-10">
@@ -387,28 +422,28 @@ export default function PublicLandingPage() {
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-6">
-                        <div className="p-7 rounded-3xl bg-card border border-border space-y-3 shadow-sm">
+                        <div className="p-6 sm:p-7 rounded-xl bg-card border border-border space-y-3.5 shadow-sm">
                             <div className="flex items-center gap-2">
                                 <Cpu className="w-5 h-5 text-primary" />
-                                <h3 className="text-base font-bold text-foreground">SigLIP Vision Transformer</h3>
+                                <h3 className="text-base font-bold text-foreground font-sans">SigLIP Vision Transformer</h3>
                             </div>
                             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                                 Evaluates high-level learned feature embeddings. Produces a calibrated confidence probability reflecting how closely pixel arrangements mirror known generative models.
                             </p>
-                            <span className="inline-block text-[11px] font-mono font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-md">
+                            <span className="inline-block text-[11px] font-mono font-bold text-primary bg-primary/10 px-2.5 py-0.5 rounded-md border border-primary/20">
                                 Probabilistic Metric
                             </span>
                         </div>
 
-                        <div className="p-7 rounded-3xl bg-card border border-border space-y-3 shadow-sm">
+                        <div className="p-6 sm:p-7 rounded-xl bg-card border border-border space-y-3.5 shadow-sm">
                             <div className="flex items-center gap-2">
                                 <Layers className="w-5 h-5 text-primary" />
-                                <h3 className="text-base font-bold text-foreground">Error Level Analysis (ELA)</h3>
+                                <h3 className="text-base font-bold text-foreground font-sans">Error Level Analysis (ELA)</h3>
                             </div>
                             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                                 Measures direct mathematical compression artifacts in the discrete cosine transform (DCT) domain. Highlights localized splicing that diverges from the global frame error baseline.
                             </p>
-                            <span className="inline-block text-[11px] font-mono font-bold text-green-600 bg-green-500/10 px-2.5 py-1 rounded-md">
+                            <span className="inline-block text-[11px] font-mono font-bold text-green-700 dark:text-green-400 bg-green-500/10 px-2.5 py-0.5 rounded-md border border-green-500/20">
                                 Deterministic Signal Metric
                             </span>
                         </div>
@@ -417,17 +452,17 @@ export default function PublicLandingPage() {
             </section>
 
             {/* ========================================================= */}
-            {/* SECTION G: PRIVACY AND TRANSPARENCY */}
+            {/* PRIVACY AND TRANSPARENCY SECTION */}
             {/* ========================================================= */}
             <section id="privacy" className="w-full py-16 sm:py-20 relative z-10">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-8">
-                    <div className="p-8 sm:p-10 rounded-3xl bg-card border border-border shadow-sm space-y-6">
+                    <div className="p-6 sm:p-8 rounded-2xl bg-card border border-border shadow-sm space-y-6">
                         <div className="flex items-center gap-3">
-                            <div className="p-2.5 rounded-2xl bg-primary/10 text-primary">
+                            <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
                                 <Lock className="w-5 h-5" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-bold text-foreground font-sans">
+                                <h2 className="text-lg sm:text-xl font-bold text-foreground font-sans">
                                     Privacy, Processing & Data Transparency
                                 </h2>
                                 <p className="text-xs text-muted-foreground">
@@ -437,19 +472,19 @@ export default function PublicLandingPage() {
                         </div>
 
                         <div className="grid sm:grid-cols-2 gap-4 text-xs text-muted-foreground leading-relaxed">
-                            <div className="p-4 rounded-2xl bg-muted/30 border border-border/50 space-y-1.5">
-                                <span className="font-bold text-foreground">Client-Side Pre-processing</span>
-                                <p>Images are scaled to maximum 512px boundaries directly in your browser prior to transmission, preserving native JPEG compression qualities.</p>
+                            <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-1.5">
+                                <span className="font-bold text-foreground">Client-Side Dimension Management</span>
+                                <p>Images exceeding max bounds are proportionally scaled in your browser, maintaining original compression attributes for ELA computation.</p>
                             </div>
-                            <div className="p-4 rounded-2xl bg-muted/30 border border-border/50 space-y-1.5">
+                            <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-1.5">
                                 <span className="font-bold text-foreground">Direct Stream Inference</span>
                                 <p>Payloads stream directly via multipart form data to the backend detection endpoint for immediate inference execution.</p>
                             </div>
-                            <div className="p-4 rounded-2xl bg-muted/30 border border-border/50 space-y-1.5">
+                            <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-1.5">
                                 <span className="font-bold text-foreground">Cryptographic SHA-256 Ledger</span>
                                 <p>Scan records store the calculated hash and metadata to enable verifiable verification certificate generation.</p>
                             </div>
-                            <div className="p-4 rounded-2xl bg-muted/30 border border-border/50 space-y-1.5">
+                            <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-1.5">
                                 <span className="font-bold text-foreground">User-Controlled Data</span>
                                 <p>Audit histories remain accessible through the Scan History ledger with full CSV and JSON data export controls.</p>
                             </div>
@@ -459,7 +494,7 @@ export default function PublicLandingPage() {
             </section>
 
             {/* ========================================================= */}
-            {/* SECTION H: FAQ */}
+            {/* FAQ SECTION */}
             {/* ========================================================= */}
             <section id="faq" className="w-full py-20 sm:py-24 bg-muted/20 border-t border-border/60 relative z-10">
                 <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-8">
@@ -476,12 +511,12 @@ export default function PublicLandingPage() {
                         {faqs.map((faq, idx) => (
                             <div
                                 key={idx}
-                                className="rounded-2xl bg-card border border-border shadow-sm overflow-hidden"
+                                className="rounded-xl bg-card border border-border shadow-sm overflow-hidden"
                             >
                                 <button
                                     type="button"
                                     onClick={() => toggleFaq(idx)}
-                                    className="w-full p-5 text-left flex items-center justify-between text-sm sm:text-base font-bold text-foreground hover:bg-muted/40 transition-colors"
+                                    className="w-full p-4 sm:p-5 text-left flex items-center justify-between text-sm sm:text-base font-bold text-foreground hover:bg-muted/40 transition-colors"
                                 >
                                     <span>{faq.question}</span>
                                     <ChevronDown
@@ -502,26 +537,26 @@ export default function PublicLandingPage() {
             </section>
 
             {/* ========================================================= */}
-            {/* SECTION I: FINAL CALL TO ACTION */}
+            {/* FINAL CALL TO ACTION */}
             {/* ========================================================= */}
-            <section className="w-full py-24 sm:py-32 relative z-10 overflow-hidden text-center">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-6">
-                    <h2 className="text-3xl sm:text-4xl md:text-6xl font-serif text-foreground text-balance">
+            <section className="w-full py-20 sm:py-28 relative z-10 overflow-hidden text-center">
+                <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-6">
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-foreground text-balance">
                         Ready to Examine Your Images?
                     </h2>
-                    <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
-                        Start an analysis and explore the evidence available through AIVerifySnap.
+                    <p className="text-sm sm:text-base text-muted-foreground max-w-lg mx-auto leading-relaxed">
+                        Start an analysis and explore the forensic evidence available through AIVerifySnap.
                     </p>
-                    <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3.5">
                         <Link
                             href="/detect"
-                            className="w-full sm:w-auto px-8 py-4 bg-foreground text-background font-semibold rounded-full hover:bg-foreground/90 transition-all text-base shadow-md"
+                            className="w-full sm:w-auto px-8 py-3.5 bg-foreground text-background font-semibold rounded-xl hover:bg-foreground/90 transition-all text-sm shadow-sm"
                         >
                             Start Analyzing
                         </Link>
                         <Link
                             href="/dashboard"
-                            className="w-full sm:w-auto px-8 py-4 bg-card border border-border text-foreground font-semibold rounded-full hover:bg-muted transition-all text-base shadow-sm flex items-center justify-center gap-2"
+                            className="w-full sm:w-auto px-8 py-3.5 bg-card border border-border text-foreground font-semibold rounded-xl hover:bg-muted transition-all text-sm shadow-sm flex items-center justify-center gap-2"
                         >
                             <span>Open Dashboard</span>
                             <ArrowRight className="w-4 h-4 text-muted-foreground" />
@@ -529,7 +564,7 @@ export default function PublicLandingPage() {
                     </div>
                 </div>
 
-                {/* Background watermark */}
+                {/* Subtle Background Watermark */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full overflow-hidden flex justify-center opacity-[0.025] pointer-events-none select-none -z-10" aria-hidden="true">
                     <span className="text-[7rem] sm:text-[11rem] lg:text-[14rem] font-black tracking-tighter whitespace-nowrap">AIVERIFYSNAP</span>
                 </div>

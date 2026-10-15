@@ -89,12 +89,12 @@ export default function DashboardOverviewPage() {
 
             {/* KPI Summary Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-5 rounded-3xl bg-card border border-border shadow-sm space-y-2 hover:border-foreground/20 transition-colors">
-                    <div className="flex items-center justify-between text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                <div className="p-5 rounded-xl bg-card border border-border shadow-sm space-y-2 hover:border-foreground/20 transition-colors">
+                    <div className="flex items-center justify-between text-[11px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">
                         <span>Total Scans</span>
                         <History className="w-4 h-4 text-primary" />
                     </div>
-                    <div className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-foreground">
+                    <div className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-foreground">
                         {error ? "Unavailable" : totalScans}
                     </div>
                     <p className="text-[11px] text-muted-foreground">
@@ -102,38 +102,38 @@ export default function DashboardOverviewPage() {
                     </p>
                 </div>
 
-                <div className="p-5 rounded-3xl bg-card border border-border shadow-sm space-y-2 hover:border-foreground/20 transition-colors">
-                    <div className="flex items-center justify-between text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                <div className="p-5 rounded-xl bg-card border border-border shadow-sm space-y-2 hover:border-foreground/20 transition-colors">
+                    <div className="flex items-center justify-between text-[11px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">
                         <span>Synthetic Detected</span>
                         <AlertTriangle className="w-4 h-4 text-destructive" />
                     </div>
-                    <div className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-destructive">
+                    <div className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-destructive">
                         {error ? "Unavailable" : fakeCount}
                     </div>
-                    <p className="text-[11px] text-destructive/90 font-medium">
+                    <p className="text-[11px] text-destructive/90 font-medium font-mono">
                         {totalScans > 0 ? `${Math.round((fakeCount / totalScans) * 100)}% manipulation rate` : "0% manipulation rate"}
                     </p>
                 </div>
 
-                <div className="p-5 rounded-3xl bg-card border border-border shadow-sm space-y-2 hover:border-foreground/20 transition-colors">
-                    <div className="flex items-center justify-between text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                <div className="p-5 rounded-xl bg-card border border-border shadow-sm space-y-2 hover:border-foreground/20 transition-colors">
+                    <div className="flex items-center justify-between text-[11px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">
                         <span>Verified Authentic</span>
-                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
                     </div>
-                    <div className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-green-600">
+                    <div className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-green-600 dark:text-green-400">
                         {error ? "Unavailable" : realCount}
                     </div>
-                    <p className="text-[11px] text-green-600/90 font-medium">
+                    <p className="text-[11px] text-green-600/90 dark:text-green-400/90 font-medium font-mono">
                         {totalScans > 0 ? `${Math.round((realCount / totalScans) * 100)}% camera frames` : "0% genuine frames"}
                     </p>
                 </div>
 
-                <div className="p-5 rounded-3xl bg-card border border-border shadow-sm space-y-2 hover:border-foreground/20 transition-colors">
-                    <div className="flex items-center justify-between text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                <div className="p-5 rounded-xl bg-card border border-border shadow-sm space-y-2 hover:border-foreground/20 transition-colors">
+                    <div className="flex items-center justify-between text-[11px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">
                         <span>Neural Certainty</span>
                         <Activity className="w-4 h-4 text-primary" />
                     </div>
-                    <div className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-foreground">
+                    <div className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-foreground">
                         {error ? "Unavailable" : `${avgConfidence}%`}
                     </div>
                     <p className="text-[11px] text-muted-foreground">
@@ -143,11 +143,11 @@ export default function DashboardOverviewPage() {
             </div>
 
             {/* Main Grid: Recent Scans + Quick Tools */}
-            <div className="grid lg:grid-cols-12 gap-8 items-start">
+            <div className="grid lg:grid-cols-12 gap-6 items-start">
                 {/* Left (8 cols): Recent Analysis Activity */}
-                <div className="lg:col-span-8 space-y-4">
+                <div className="lg:col-span-8 space-y-3.5">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-base font-bold text-foreground tracking-tight flex items-center gap-2">
+                        <h2 className="text-sm font-bold text-foreground tracking-tight flex items-center gap-2 font-sans">
                             <History className="w-4 h-4 text-primary" />
                             <span>Recent Forensic Verifications</span>
                         </h2>
@@ -160,29 +160,29 @@ export default function DashboardOverviewPage() {
                     </div>
 
                     {error && !loading ? (
-                        <div className="p-8 sm:p-12 rounded-3xl bg-destructive/10 border border-destructive/20 text-center space-y-4 shadow-sm">
-                            <div className="w-16 h-16 rounded-full bg-destructive/20 text-destructive flex items-center justify-center mx-auto">
-                                <HardDrive className="w-8 h-8" />
+                        <div className="p-6 sm:p-8 rounded-xl bg-destructive/10 border border-destructive/20 text-center space-y-3.5 shadow-sm">
+                            <div className="w-12 h-12 rounded-xl bg-destructive/20 text-destructive flex items-center justify-center mx-auto">
+                                <HardDrive className="w-6 h-6" />
                             </div>
                             <div className="space-y-1">
-                                <h3 className="text-base font-bold text-foreground">
+                                <h3 className="text-sm font-bold text-foreground font-sans">
                                     Failed to Load Scan History
                                 </h3>
-                                <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto">
+                                <p className="text-xs text-muted-foreground max-w-md mx-auto">
                                     {error}
                                 </p>
                             </div>
                             <button
                                 type="button"
                                 onClick={loadData}
-                                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-foreground text-background text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-all shadow-sm"
+                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-foreground text-background text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-all shadow-sm"
                             >
                                 <RefreshCw className="w-3.5 h-3.5" />
                                 <span>Retry Connection</span>
                             </button>
                         </div>
                     ) : totalScans > 0 ? (
-                        <div className="bg-card border border-border rounded-3xl divide-y divide-border/60 overflow-hidden shadow-sm">
+                        <div className="bg-card border border-border rounded-xl divide-y divide-border/60 overflow-hidden shadow-sm">
                             {history.slice(0, 5).map((row) => {
                                 const isFake = row.resultLabel?.toLowerCase() === "fake";
                                 const status = isFake ? "AI Generated" : "Real";
@@ -191,30 +191,30 @@ export default function DashboardOverviewPage() {
                                 return (
                                     <div
                                         key={row.scanId}
-                                        className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:bg-muted/30 transition-colors group"
+                                        className="p-3.5 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:bg-muted/30 transition-colors group"
                                     >
-                                        <div className="flex items-center gap-3.5 min-w-0">
+                                        <div className="flex items-center gap-3 min-w-0">
                                             <span className="font-mono text-xs font-bold text-muted-foreground shrink-0">
                                                 #{row.scanId}
                                             </span>
                                             <div className="min-w-0">
-                                                <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors" title={fileName}>
+                                                <p className="text-xs sm:text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors" title={fileName}>
                                                     {fileName}
                                                 </p>
-                                                <p className="text-xs text-muted-foreground font-mono mt-0.5">
+                                                <p className="text-[11px] text-muted-foreground font-mono mt-0.5">
                                                     {row.scanTimestamp ? new Date(row.scanTimestamp).toLocaleString() : "Recent"}
                                                 </p>
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                                        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
                                             <ResultBadge status={status} size="sm" />
                                             <span className="font-mono text-xs font-bold text-foreground">
                                                 {row.confidenceScore != null ? `${row.confidenceScore.toFixed(1)}%` : "N/A"}
                                             </span>
                                             <Link
                                                 href={`/report/${row.scanId}`}
-                                                className="px-3 py-1.5 rounded-xl bg-muted hover:bg-muted/80 text-foreground text-xs font-semibold transition-colors flex items-center gap-1"
+                                                className="px-2.5 py-1 rounded-lg bg-muted hover:bg-muted/80 text-foreground text-xs font-semibold transition-colors flex items-center gap-1"
                                             >
                                                 <span>Report</span>
                                                 <ArrowRight className="w-3 h-3" />
@@ -225,23 +225,23 @@ export default function DashboardOverviewPage() {
                             })}
                         </div>
                     ) : (
-                        <div className="p-8 sm:p-12 rounded-3xl bg-card border border-border shadow-sm text-center space-y-4">
-                            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto text-muted-foreground">
-                                <HardDrive className="w-8 h-8" />
+                        <div className="p-8 sm:p-10 rounded-xl bg-card border border-border shadow-sm text-center space-y-3.5">
+                            <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+                                <HardDrive className="w-6 h-6" />
                             </div>
                             <div className="space-y-1">
-                                <h3 className="text-base font-bold text-foreground">
+                                <h3 className="text-sm font-bold text-foreground font-sans">
                                     No Scans Recorded in Current Session
                                 </h3>
-                                <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto">
+                                <p className="text-xs text-muted-foreground max-w-md mx-auto">
                                     Upload an image in New Analysis to generate your first Error Level Analysis and SigLIP ViT forensic report.
                                 </p>
                             </div>
                             <Link
                                 href="/detect"
-                                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-foreground text-background text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-all shadow-sm"
+                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-foreground text-background text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-all shadow-sm"
                             >
-                                <Sparkles className="w-4 h-4" />
+                                <Sparkles className="w-3.5 h-3.5" />
                                 <span>Analyze Your First Image</span>
                             </Link>
                         </div>
@@ -249,93 +249,93 @@ export default function DashboardOverviewPage() {
                 </div>
 
                 {/* Right (4 cols): Quick Tool Shortcuts & Engine Status */}
-                <div className="lg:col-span-4 space-y-6">
+                <div className="lg:col-span-4 space-y-4">
                     {/* Tool Shortcuts */}
-                    <div className="p-5 rounded-3xl bg-card border border-border shadow-sm space-y-3">
-                        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    <div className="p-4 sm:p-5 rounded-xl bg-card border border-border shadow-sm space-y-2.5">
+                        <h3 className="text-[11px] font-mono font-semibold uppercase tracking-wider text-muted-foreground">
                             Forensic Toolkit
                         </h3>
 
-                        <div className="space-y-2">
+                        <div className="space-y-1.5">
                             <Link
                                 href="/detect"
-                                className="p-3.5 rounded-2xl bg-muted/40 hover:bg-muted border border-border/50 flex items-center justify-between transition-colors group"
+                                className="p-3 rounded-lg bg-muted/40 hover:bg-muted border border-border/50 flex items-center justify-between transition-colors group"
                             >
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 rounded-xl bg-primary/10 text-primary group-hover:scale-105 transition-transform">
-                                        <ScanSearch className="w-4 h-4" />
+                                <div className="flex items-center gap-2.5">
+                                    <div className="p-1.5 rounded-md bg-primary/10 text-primary group-hover:scale-105 transition-transform">
+                                        <ScanSearch className="w-3.5 h-3.5" />
                                     </div>
                                     <div>
                                         <p className="text-xs font-bold text-foreground">Image Authenticity</p>
-                                        <p className="text-[11px] text-muted-foreground">SigLIP ViT + ELA Engine</p>
+                                        <p className="text-[11px] text-muted-foreground font-mono">SigLIP ViT + ELA Engine</p>
                                     </div>
                                 </div>
-                                <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+                                <ArrowRight className="w-3.5 h-3.5 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
                             </Link>
 
                             <Link
                                 href="/protection"
-                                className="p-3.5 rounded-2xl bg-muted/40 hover:bg-muted border border-border/50 flex items-center justify-between transition-colors group"
+                                className="p-3 rounded-lg bg-muted/40 hover:bg-muted border border-border/50 flex items-center justify-between transition-colors group"
                             >
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 rounded-xl bg-primary/10 text-primary group-hover:scale-105 transition-transform">
-                                        <Shield className="w-4 h-4" />
+                                <div className="flex items-center gap-2.5">
+                                    <div className="p-1.5 rounded-md bg-primary/10 text-primary group-hover:scale-105 transition-transform">
+                                        <Shield className="w-3.5 h-3.5" />
                                     </div>
                                     <div>
                                         <p className="text-xs font-bold text-foreground">Likeness Protection</p>
-                                        <p className="text-[11px] text-muted-foreground">Biometric face-clone index</p>
+                                        <p className="text-[11px] text-muted-foreground font-mono">Biometric face-clone index</p>
                                     </div>
                                 </div>
-                                <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+                                <ArrowRight className="w-3.5 h-3.5 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
                             </Link>
 
                             <Link
                                 href="/admin"
-                                className="p-3.5 rounded-2xl bg-muted/40 hover:bg-muted border border-border/50 flex items-center justify-between transition-colors group"
+                                className="p-3 rounded-lg bg-muted/40 hover:bg-muted border border-border/50 flex items-center justify-between transition-colors group"
                             >
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 rounded-xl bg-primary/10 text-primary group-hover:scale-105 transition-transform">
-                                        <Activity className="w-4 h-4" />
+                                <div className="flex items-center gap-2.5">
+                                    <div className="p-1.5 rounded-md bg-primary/10 text-primary group-hover:scale-105 transition-transform">
+                                        <Activity className="w-3.5 h-3.5" />
                                     </div>
                                     <div>
                                         <p className="text-xs font-bold text-foreground">Operations Center</p>
-                                        <p className="text-[11px] text-muted-foreground">Cluster load & threat feed</p>
+                                        <p className="text-[11px] text-muted-foreground font-mono">Cluster load & threat feed</p>
                                     </div>
                                 </div>
-                                <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+                                <ArrowRight className="w-3.5 h-3.5 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
                             </Link>
 
                             <Link
                                 href="/history"
-                                className="p-3.5 rounded-2xl bg-muted/40 hover:bg-muted border border-border/50 flex items-center justify-between transition-colors group"
+                                className="p-3 rounded-lg bg-muted/40 hover:bg-muted border border-border/50 flex items-center justify-between transition-colors group"
                             >
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 rounded-xl bg-primary/10 text-primary group-hover:scale-105 transition-transform">
-                                        <FileText className="w-4 h-4" />
+                                <div className="flex items-center gap-2.5">
+                                    <div className="p-1.5 rounded-md bg-primary/10 text-primary group-hover:scale-105 transition-transform">
+                                        <FileText className="w-3.5 h-3.5" />
                                     </div>
                                     <div>
                                         <p className="text-xs font-bold text-foreground">Ledger Export</p>
-                                        <p className="text-[11px] text-muted-foreground">CSV & JSON download</p>
+                                        <p className="text-[11px] text-muted-foreground font-mono">CSV & JSON download</p>
                                     </div>
                                 </div>
-                                <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+                                <ArrowRight className="w-3.5 h-3.5 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
                             </Link>
                         </div>
                     </div>
 
                     {/* Engine Health Card */}
-                    <div className="p-5 rounded-3xl bg-card border border-border shadow-sm space-y-3">
+                    <div className="p-4 sm:p-5 rounded-xl bg-card border border-border shadow-sm space-y-2.5">
                         <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                            <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-muted-foreground">
                                 Inference Health
                             </span>
-                            <span className="flex items-center gap-1 text-[11px] font-mono font-bold text-green-600">
+                            <span className="flex items-center gap-1 text-[11px] font-mono font-bold text-green-600 dark:text-green-400">
                                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                                100% OPERATIONAL
+                                OPERATIONAL
                             </span>
                         </div>
 
-                        <div className="space-y-2 text-xs">
+                        <div className="space-y-1.5 text-xs">
                             <div className="flex justify-between text-muted-foreground">
                                 <span>Vision Transformer (ViT)</span>
                                 <span className="font-mono text-foreground font-semibold">Active</span>

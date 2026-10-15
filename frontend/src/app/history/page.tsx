@@ -212,7 +212,7 @@ export default function HistoryPage() {
             {/* Filter, Search & Sort Bar */}
             <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
                 {/* Filter Pills */}
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-1.5">
                     {(["All", "AI Generated", "Real", "Suspicious"] as const).map((f) => {
                         const isActive = filter === f;
                         return (
@@ -220,15 +220,15 @@ export default function HistoryPage() {
                                 key={f}
                                 type="button"
                                 onClick={() => setFilter(f)}
-                                className={`px-3.5 py-2 rounded-full text-xs font-semibold transition-all duration-200 flex items-center gap-2 ${
+                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 flex items-center gap-1.5 ${
                                     isActive
                                         ? "bg-foreground text-background shadow-sm"
-                                        : "bg-card text-muted-foreground hover:bg-muted hover:text-foreground border border-border/80"
+                                        : "bg-card text-muted-foreground hover:bg-muted hover:text-foreground border border-border"
                                 }`}
                             >
                                 <span>{f}</span>
                                 <span
-                                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                                    className={`text-[10px] px-1.5 py-0.2 rounded-md font-mono ${
                                         isActive
                                             ? "bg-background/20 text-background"
                                             : "bg-muted text-muted-foreground"
@@ -245,20 +245,20 @@ export default function HistoryPage() {
                 <div className="flex flex-col sm:flex-row items-center gap-2.5">
                     {/* Search Input */}
                     <div className="relative w-full sm:w-64">
-                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
                         <input
                             type="text"
                             placeholder="Filter by ID or file..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-9 pr-8 py-2 rounded-full border border-border bg-card text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-foreground/20 transition-all placeholder:text-muted-foreground"
+                            className="w-full pl-8 pr-8 py-1.5 rounded-lg border border-border bg-card text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-foreground transition-all placeholder:text-muted-foreground"
                         />
                         {searchQuery && (
                             <button
                                 type="button"
                                 onClick={() => setSearchQuery("")}
                                 aria-label="Clear search"
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                             >
                                 <X className="w-3.5 h-3.5" />
                             </button>
@@ -266,7 +266,7 @@ export default function HistoryPage() {
                     </div>
 
                     {/* Sort Selector */}
-                    <div className="flex items-center gap-1.5 bg-card border border-border px-3 py-1.5 rounded-full text-xs text-muted-foreground w-full sm:w-auto justify-between sm:justify-start">
+                    <div className="flex items-center gap-1.5 bg-card border border-border px-3 py-1.5 rounded-lg text-xs text-muted-foreground w-full sm:w-auto justify-between sm:justify-start">
                         <ArrowUpDown className="w-3.5 h-3.5 shrink-0" />
                         <select
                             value={sortBy}
@@ -284,7 +284,7 @@ export default function HistoryPage() {
 
             {/* Loading State */}
             {loading && (
-                <div className="flex flex-col items-center justify-center py-24 space-y-4 bg-card border border-border rounded-3xl">
+                <div className="flex flex-col items-center justify-center py-24 space-y-4 bg-card border border-border/80 rounded-2xl shadow-sm">
                     <Loader2 className="w-8 h-8 text-primary animate-spin" />
                     <p className="text-xs sm:text-sm font-medium text-muted-foreground">Retrieving cryptographic audit logs...</p>
                 </div>
@@ -292,11 +292,11 @@ export default function HistoryPage() {
 
             {/* Error State */}
             {error && !loading && (
-                <div className="p-8 rounded-3xl bg-destructive/10 border border-destructive/20 text-destructive text-center max-w-xl mx-auto space-y-3">
+                <div className="p-8 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-center max-w-xl mx-auto space-y-3">
                     <p className="font-semibold text-sm">{error}</p>
                     <button
                         onClick={fetchHistory}
-                        className="px-5 py-2 bg-destructive text-destructive-foreground text-xs font-semibold rounded-full hover:bg-destructive/90 transition-colors"
+                        className="px-5 py-2 bg-destructive text-destructive-foreground text-xs font-semibold rounded-xl hover:bg-destructive/90 transition-colors"
                     >
                         Retry Connection
                     </button>
@@ -307,8 +307,8 @@ export default function HistoryPage() {
             {!loading && !error && (
                 <div className="space-y-4">
                     {processedHistory.length === 0 ? (
-                        <div className="bg-card border border-border rounded-3xl p-12 text-center max-w-lg mx-auto space-y-4 shadow-sm">
-                            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+                        <div className="bg-card border border-border/80 rounded-2xl p-12 text-center max-w-lg mx-auto space-y-4 shadow-sm">
+                            <div className="w-16 h-16 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground border border-border/40">
                                 <HardDrive className="w-8 h-8" />
                             </div>
                             <h3 className="text-lg font-bold text-foreground">No records matching query</h3>
@@ -320,14 +320,14 @@ export default function HistoryPage() {
                             {history.length === 0 ? (
                                 <Link
                                     href="/detect"
-                                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-foreground text-background rounded-full text-xs font-semibold hover:bg-foreground/90 transition-colors shadow-sm"
+                                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-foreground text-background rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors shadow-sm"
                                 >
                                     <Sparkles className="w-4 h-4" /> Start First Scan
                                 </Link>
                             ) : (
                                 <button
                                     onClick={() => { setFilter("All"); setSearchQuery(""); }}
-                                    className="px-4 py-2 bg-muted text-foreground rounded-full text-xs font-semibold hover:bg-muted/80 transition-colors"
+                                    className="px-4 py-2 bg-muted text-foreground rounded-xl text-xs font-semibold hover:bg-muted/80 transition-colors border border-border/60"
                                 >
                                     Reset Filters
                                 </button>
@@ -336,10 +336,10 @@ export default function HistoryPage() {
                     ) : (
                         <>
                             {/* Desktop Table View */}
-                            <div className="hidden md:block bg-card border border-border rounded-3xl overflow-hidden shadow-sm">
+                            <div className="hidden md:block bg-card border border-border/80 rounded-2xl overflow-hidden shadow-sm">
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-xs text-left">
-                                        <thead className="bg-muted/40 text-muted-foreground font-bold uppercase tracking-wider text-[11px] border-b border-border">
+                                        <thead className="bg-muted/40 text-muted-foreground font-bold uppercase tracking-wider text-[11px] border-b border-border/80">
                                             <tr>
                                                 <th scope="col" className="px-6 py-4">Scan Reference</th>
                                                 <th scope="col" className="px-6 py-4">Analyzed Media</th>

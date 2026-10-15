@@ -151,7 +151,7 @@ export default function ProtectionPage() {
             <div className="max-w-4xl mx-auto px-4 py-8 md:py-16 space-y-12">
                 {/* Hero Header */}
                 <div className="text-center space-y-4">
-                    <div className="inline-flex items-center justify-center p-4 bg-primary/10 rounded-3xl mb-2 text-primary">
+                    <div className="inline-flex items-center justify-center p-4 bg-primary/10 rounded-2xl mb-2 text-primary border border-primary/20">
                         <Fingerprint className="w-10 h-10" />
                     </div>
                     <h1 className="text-4xl md:text-5xl font-black tracking-tight text-foreground text-balance">
@@ -167,9 +167,9 @@ export default function ProtectionPage() {
                     <motion.div
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-card border-2 border-primary/30 p-8 rounded-3xl text-center space-y-5 shadow-lg max-w-xl mx-auto"
+                        className="bg-card border-2 border-primary/30 p-8 rounded-2xl text-center space-y-5 shadow-lg max-w-xl mx-auto"
                     >
-                        <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
+                        <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mx-auto border border-primary/20">
                             <Lock className="w-6 h-6" />
                         </div>
                         <div className="space-y-1.5">
@@ -180,7 +180,7 @@ export default function ProtectionPage() {
                         </div>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
                             <SignInButton mode="modal">
-                                <button className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-foreground text-background text-xs font-bold hover:bg-foreground/90 transition-all shadow-sm">
+                                <button className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-foreground text-background text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-all shadow-sm">
                                     Sign In with Clerk
                                 </button>
                             </SignInButton>
@@ -193,7 +193,7 @@ export default function ProtectionPage() {
                     <motion.div
                         initial={{ opacity: 0, scale: 0.96 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="bg-card p-4 sm:p-8 border border-border shadow-sm rounded-[2.5rem] max-w-2xl mx-auto space-y-6"
+                        className="bg-card p-4 sm:p-8 border border-border shadow-sm rounded-2xl max-w-2xl mx-auto space-y-6"
                     >
                         <div className="text-center space-y-1">
                             <h2 className="text-lg font-bold">Provide Reference Portrait</h2>
@@ -212,7 +212,7 @@ export default function ProtectionPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="flex flex-col items-center justify-center p-8 sm:p-12 bg-card border border-border rounded-[2.5rem] shadow-sm max-w-xl mx-auto text-center space-y-6"
+                            className="flex flex-col items-center justify-center p-8 sm:p-12 bg-card border border-border rounded-2xl shadow-sm max-w-xl mx-auto text-center space-y-6"
                         >
                             <div className="relative mb-2">
                                 <div className="w-36 h-36 rounded-full border-4 border-dashed border-primary/30 p-2 animate-spin-slow">
@@ -250,7 +250,7 @@ export default function ProtectionPage() {
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="bg-destructive/10 border border-destructive/20 text-destructive p-8 rounded-[2rem] max-w-xl mx-auto text-center space-y-4 shadow-sm"
+                            className="bg-destructive/10 border border-destructive/20 text-destructive p-8 rounded-2xl max-w-xl mx-auto text-center space-y-4 shadow-sm"
                         >
                             <AlertCircle className="w-10 h-10 mx-auto text-destructive" />
                             <div className="space-y-1">
@@ -262,7 +262,7 @@ export default function ProtectionPage() {
                             <div className="pt-2">
                                 <button
                                     onClick={handleReset}
-                                    className="px-6 py-2.5 rounded-full bg-foreground text-background text-xs font-bold hover:bg-foreground/90 transition-all shadow-sm inline-flex items-center gap-2"
+                                    className="px-6 py-2.5 rounded-xl bg-foreground text-background text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-all shadow-sm inline-flex items-center gap-2"
                                 >
                                     <RefreshCw className="w-3.5 h-3.5" />
                                     Retry with Another Image
@@ -280,7 +280,7 @@ export default function ProtectionPage() {
                             animate={{ opacity: 1, y: 0 }}
                             className="space-y-8 max-w-3xl mx-auto"
                         >
-                            <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 p-6 rounded-[2rem] flex items-start gap-4 shadow-sm">
+                            <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 p-6 rounded-2xl flex items-start gap-4 shadow-sm">
                                 <ShieldCheck className="w-7 h-7 shrink-0 mt-1" />
                                 <div className="space-y-1">
                                     <h3 className="text-lg font-bold text-foreground">
@@ -292,7 +292,7 @@ export default function ProtectionPage() {
                                 </div>
                             </div>
 
-                            <div className="bg-card border border-border p-6 rounded-3xl space-y-4">
+                            <div className="bg-card border border-border p-6 rounded-2xl space-y-4">
                                 <div className="flex items-center justify-between border-b border-border pb-3">
                                     <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Scan Status</span>
                                     <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold">
@@ -334,7 +334,7 @@ export default function ProtectionPage() {
                             className="space-y-8 max-w-3xl mx-auto"
                         >
                             {/* Threat Banner */}
-                            <div className="bg-destructive/10 border border-destructive/20 text-destructive p-6 rounded-[2rem] flex items-start gap-4 shadow-sm">
+                            <div className="bg-destructive/10 border border-destructive/20 text-destructive p-6 rounded-2xl flex items-start gap-4 shadow-sm">
                                 <AlertTriangle className="w-7 h-7 shrink-0 mt-1" />
                                 <div className="space-y-1">
                                     <h3 className="text-lg font-bold text-foreground">
@@ -372,7 +372,7 @@ export default function ProtectionPage() {
                             </div>
 
                             {/* DMCA Legal Takedown Notice Generator Tool */}
-                            <div className="p-6 rounded-3xl bg-card border border-border shadow-sm space-y-4">
+                            <div className="p-6 rounded-2xl bg-card border border-border shadow-sm space-y-4">
                                 <div className="flex items-center justify-between">
                                     <div className="space-y-0.5">
                                         <h4 className="font-bold text-base flex items-center gap-2">

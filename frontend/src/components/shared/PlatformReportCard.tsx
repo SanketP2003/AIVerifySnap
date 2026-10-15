@@ -43,38 +43,39 @@ export function PlatformReportCard({
   const formattedUrl = url.startsWith("http") ? url : `https://${url}`;
 
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 rounded-2xl border border-border bg-card/60 hover:bg-card/90 transition-all gap-4">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-5 rounded-xl border border-border bg-card hover:border-foreground/20 transition-all gap-4 shadow-sm">
       <div className="flex flex-col flex-1 items-start gap-1.5 w-full">
         <div className="flex flex-wrap items-center gap-2">
-          <AlertCircle className="w-5 h-5 text-destructive shrink-0" />
-          <h3 className="font-semibold text-lg text-foreground">{platform}</h3>
-          <span className="text-xs bg-destructive/10 text-destructive font-bold px-2.5 py-0.5 rounded-full border border-destructive/20">
+          <AlertCircle className="w-4 h-4 text-destructive shrink-0" />
+          <h3 className="font-bold text-base text-foreground font-sans">{platform}</h3>
+          <span className="text-[11px] font-mono bg-destructive/10 text-destructive font-bold px-2 py-0.5 rounded-md border border-destructive/25">
             {matchConfidence}% Match
           </span>
         </div>
 
-        <div className="flex items-center gap-2 max-w-full text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 max-w-full text-xs text-muted-foreground">
           <a
             href={formattedUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="truncate max-w-[260px] sm:max-w-md hover:text-primary transition-colors hover:underline inline-flex items-center gap-1"
+            className="truncate max-w-[260px] sm:max-w-md hover:text-foreground transition-colors hover:underline inline-flex items-center gap-1 font-mono"
             title={formattedUrl}
           >
             <span>{url}</span>
-            <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+            <ExternalLink className="w-3 h-3 shrink-0" />
           </a>
           <button
             type="button"
             onClick={handleCopyUrl}
             aria-label="Copy infringement URL"
-            className="p-1 hover:bg-muted rounded-md text-muted-foreground hover:text-foreground transition-colors shrink-0"
+            className="px-1.5 py-0.5 hover:bg-muted rounded text-[11px] font-mono text-muted-foreground hover:text-foreground transition-colors shrink-0 border border-border/50"
           >
-            {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <span className="text-[11px] font-mono">Copy</span>}
+            {copied ? <Check className="w-3 h-3 text-green-500 inline mr-0.5" /> : null}
+            {copied ? "Copied" : "Copy"}
           </button>
         </div>
 
-        <span className="text-xs text-muted-foreground/80 mt-1">Detected: {dateDetected}</span>
+        <span className="text-[11px] font-mono text-muted-foreground/80 mt-0.5">Detected: {dateDetected}</span>
       </div>
 
       <div className="w-full sm:w-auto shrink-0">
@@ -82,15 +83,15 @@ export function PlatformReportCard({
           <button
             onClick={handleTakedown}
             disabled={isProcessing}
-            className="w-full sm:w-auto px-5 py-2.5 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 text-sm shadow-sm"
+            className="w-full sm:w-auto px-4 py-2 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 active:scale-98 transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 text-xs shadow-sm"
           >
-            {isProcessing && <Loader2 className="w-4 h-4 animate-spin" />}
-            {isProcessing ? "Generating Notice..." : "Generate Takedown Notice"}
+            {isProcessing && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+            <span>{isProcessing ? "Generating Notice..." : "Generate DMCA Notice"}</span>
           </button>
         ) : (
-          <div className="w-full sm:w-auto px-5 py-2.5 bg-green-500/10 text-green-600 font-semibold rounded-xl flex items-center justify-center gap-2 border border-green-500/20 text-sm cursor-default">
-            <ShieldCheck className="w-4 h-4" />
-            Notice Dispatched
+          <div className="w-full sm:w-auto px-4 py-2 bg-green-500/10 text-green-600 dark:text-green-400 font-semibold rounded-lg flex items-center justify-center gap-1.5 border border-green-500/30 text-xs cursor-default">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Notice Dispatched</span>
           </div>
         )}
       </div>

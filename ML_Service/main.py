@@ -183,6 +183,7 @@ def _infer_huggingface(img: Image.Image):
 # Endpoints
 # ---------------------------------------------------------------------------
 @app.get("/")
+@app.get("/health")
 async def health_check():
     model_loaded = custom_model is not None or hf_model is not None
     model_desc = ("AIVerifySnapModel (dual-stream RGB+ELA)"

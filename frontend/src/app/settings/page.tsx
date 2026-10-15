@@ -180,9 +180,9 @@ export default function WorkspaceSettingsPage() {
                 {/* Left (8 cols): Engine Config & Appearance */}
                 <div className="lg:col-span-8 space-y-6">
                     {/* Section 1: Forensic Detection Sensitivity */}
-                    <div className="p-6 rounded-3xl bg-card border border-border shadow-sm space-y-6">
+                    <div className="p-6 rounded-2xl bg-card border border-border/80 shadow-sm space-y-6">
                         <div className="flex items-center gap-3">
-                            <div className="p-2.5 rounded-2xl bg-primary/10 text-primary">
+                            <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20">
                                 <Sliders className="w-5 h-5" />
                             </div>
                             <div>
@@ -282,9 +282,9 @@ export default function WorkspaceSettingsPage() {
                     </div>
 
                     {/* Section 2: Display & Appearance */}
-                    <div className="p-6 rounded-3xl bg-card border border-border shadow-sm space-y-6">
+                    <div className="p-6 rounded-2xl bg-card border border-border/80 shadow-sm space-y-6">
                         <div className="flex items-center gap-3">
-                            <div className="p-2.5 rounded-2xl bg-primary/10 text-primary">
+                            <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20">
                                 <Monitor className="w-5 h-5" />
                             </div>
                             <div>
@@ -299,7 +299,7 @@ export default function WorkspaceSettingsPage() {
 
                         <div className="grid sm:grid-cols-2 gap-4 pt-2">
                             {/* Theme Choice */}
-                            <div className="p-4 rounded-2xl bg-muted/30 border border-border/40 space-y-3">
+                            <div className="p-4 rounded-xl bg-muted/30 border border-border/40 space-y-3">
                                 <span className="text-xs font-bold text-foreground block">
                                     Color Theme
                                 </span>
@@ -307,7 +307,7 @@ export default function WorkspaceSettingsPage() {
                                     <button
                                         type="button"
                                         onClick={() => setTheme("light")}
-                                        className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1.5 transition-colors ${
+                                        className={`p-2.5 rounded-lg border text-xs font-semibold flex flex-col items-center gap-1.5 transition-colors ${
                                             theme === "light"
                                                 ? "bg-foreground text-background border-foreground"
                                                 : "bg-card text-foreground border-border hover:bg-muted"
@@ -319,7 +319,7 @@ export default function WorkspaceSettingsPage() {
                                     <button
                                         type="button"
                                         onClick={() => setTheme("dark")}
-                                        className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1.5 transition-colors ${
+                                        className={`p-2.5 rounded-lg border text-xs font-semibold flex flex-col items-center gap-1.5 transition-colors ${
                                             theme === "dark"
                                                 ? "bg-foreground text-background border-foreground"
                                                 : "bg-card text-foreground border-border hover:bg-muted"
@@ -331,7 +331,7 @@ export default function WorkspaceSettingsPage() {
                                     <button
                                         type="button"
                                         onClick={() => setTheme("system")}
-                                        className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1.5 transition-colors ${
+                                        className={`p-2.5 rounded-lg border text-xs font-semibold flex flex-col items-center gap-1.5 transition-colors ${
                                             theme === "system"
                                                 ? "bg-foreground text-background border-foreground"
                                                 : "bg-card text-foreground border-border hover:bg-muted"
@@ -344,7 +344,7 @@ export default function WorkspaceSettingsPage() {
                             </div>
 
                             {/* Density Choice */}
-                            <div className="p-4 rounded-2xl bg-muted/30 border border-border/40 space-y-3">
+                            <div className="p-4 rounded-xl bg-muted/30 border border-border/40 space-y-3">
                                 <span className="text-xs font-bold text-foreground block">
                                     Ledger Row Density
                                 </span>
@@ -352,7 +352,7 @@ export default function WorkspaceSettingsPage() {
                                     <button
                                         type="button"
                                         onClick={() => setTableDensity("comfortable")}
-                                        className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1.5 transition-colors ${
+                                        className={`p-2.5 rounded-lg border text-xs font-semibold flex flex-col items-center gap-1.5 transition-colors ${
                                             tableDensity === "comfortable"
                                                 ? "bg-foreground text-background border-foreground"
                                                 : "bg-card text-foreground border-border hover:bg-muted"
@@ -364,7 +364,7 @@ export default function WorkspaceSettingsPage() {
                                     <button
                                         type="button"
                                         onClick={() => setTableDensity("compact")}
-                                        className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1.5 transition-colors ${
+                                        className={`p-2.5 rounded-lg border text-xs font-semibold flex flex-col items-center gap-1.5 transition-colors ${
                                             tableDensity === "compact"
                                                 ? "bg-foreground text-background border-foreground"
                                                 : "bg-card text-foreground border-border hover:bg-muted"
@@ -382,9 +382,9 @@ export default function WorkspaceSettingsPage() {
                 {/* Right (4 cols): Cluster Health & Account */}
                 <div className="lg:col-span-4 space-y-6">
                     {/* Cluster Diagnostics */}
-                    <div className="p-5 rounded-3xl bg-card border border-border shadow-sm space-y-4">
+                    <div className="p-5 rounded-2xl bg-card border border-border/80 shadow-sm space-y-4">
                         <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 font-mono">
                                 <Cpu className="w-4 h-4 text-primary" />
                                 <span>Cluster Status</span>
                             </span>
@@ -395,7 +395,7 @@ export default function WorkspaceSettingsPage() {
                         </div>
 
                         <div className="space-y-3 text-xs">
-                            <div className="p-3 rounded-2xl bg-muted/30 border border-border/40 space-y-1">
+                            <div className="p-3 rounded-xl bg-muted/30 border border-border/40 space-y-1">
                                 <div className="flex justify-between font-semibold">
                                     <span className="text-foreground">Backend API Service</span>
                                     <span className={`font-mono ${backendStatus === "online" ? "text-green-600" : "text-destructive"}`}>
@@ -408,7 +408,7 @@ export default function WorkspaceSettingsPage() {
                                 </div>
                             </div>
 
-                            <div className="p-3 rounded-2xl bg-muted/30 border border-border/40 space-y-1">
+                            <div className="p-3 rounded-xl bg-muted/30 border border-border/40 space-y-1">
                                 <div className="flex justify-between font-semibold">
                                     <span className="text-foreground">ML Inference Engine</span>
                                     <span className="font-mono text-foreground">
@@ -421,7 +421,7 @@ export default function WorkspaceSettingsPage() {
                                 </div>
                             </div>
 
-                            <div className="p-3 rounded-2xl bg-muted/30 border border-border/40 space-y-1">
+                            <div className="p-3 rounded-xl bg-muted/30 border border-border/40 space-y-1">
                                 <div className="flex justify-between font-semibold">
                                     <span className="text-foreground">Database Connectivity</span>
                                     <span className={`font-mono ${healthDetails?.database === "UP" || backendStatus === "online" ? "text-green-600" : "text-destructive"}`}>
@@ -437,7 +437,7 @@ export default function WorkspaceSettingsPage() {
                     </div>
 
                     {/* Account & Session Card */}
-                    <div className="p-5 rounded-3xl bg-card border border-border shadow-sm space-y-4">
+                    <div className="p-5 rounded-2xl bg-card border border-border/80 shadow-sm space-y-4">
                         <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                             <User className="w-4 h-4 text-primary" />
                             <span>Operator Account</span>

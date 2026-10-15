@@ -250,10 +250,10 @@ export default function PricingPage() {
                                 key={p.id}
                                 whileHover={{ y: -4 }}
                                 transition={{ duration: 0.2 }}
-                                className={`relative flex flex-col justify-between rounded-3xl p-6 sm:p-8 transition-all ${
+                                className={`relative flex flex-col justify-between rounded-2xl p-6 sm:p-8 transition-all ${
                                     p.highlight
                                         ? "bg-card border-2 border-primary shadow-xl shadow-primary/10 ring-1 ring-primary/20"
-                                        : "bg-card/70 border border-border shadow-sm hover:border-border/80"
+                                        : "bg-card/70 border border-border/80 shadow-sm hover:border-border"
                                 }`}
                             >
                                 {p.highlight && (
@@ -280,7 +280,7 @@ export default function PricingPage() {
                                     {/* Price Box */}
                                     <div className="pt-2 pb-4 border-b border-border/60">
                                         <div className="flex items-baseline gap-2">
-                                            <span className="text-4xl sm:text-5xl font-black tracking-tight">
+                                            <span className="text-4xl sm:text-5xl font-black tracking-tight font-mono">
                                                 {billingCycle === "monthly" ? p.priceMonthly : p.priceAnnual}
                                             </span>
                                             <span className="text-xs text-muted-foreground font-medium">
@@ -291,7 +291,7 @@ export default function PricingPage() {
 
                                     {/* Features List */}
                                     <div className="space-y-3 pt-2">
-                                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
                                             Included Capabilities
                                         </span>
                                         <ul className="space-y-2.5 text-xs sm:text-sm">
@@ -319,7 +319,7 @@ export default function PricingPage() {
                                 <div className="pt-8">
                                     <button
                                         onClick={() => handleSelectPlan(p.id)}
-                                        className={`w-full py-3 px-6 rounded-2xl font-bold text-sm transition-all focus-ring ${
+                                        className={`w-full py-3 px-6 rounded-xl font-bold text-xs uppercase tracking-wider transition-all focus-ring ${
                                             p.highlight
                                                 ? "bg-foreground text-background hover:bg-foreground/90 shadow-md"
                                                 : isCurrent
@@ -345,7 +345,7 @@ export default function PricingPage() {
                     </p>
                 </div>
 
-                <div className="bg-card border border-border rounded-3xl overflow-hidden shadow-sm">
+                <div className="bg-card border border-border/80 rounded-2xl overflow-hidden shadow-sm">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-xs sm:text-sm">
                             <thead>
@@ -429,7 +429,7 @@ export default function PricingPage() {
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="bg-card border border-border p-6 sm:p-8 rounded-3xl max-w-md w-full shadow-2xl space-y-6"
+                        className="bg-card border border-border/80 p-6 sm:p-8 rounded-2xl max-w-md w-full shadow-2xl space-y-6"
                     >
                         <div className="space-y-1">
                             <h3 className="text-xl font-bold flex items-center gap-2">

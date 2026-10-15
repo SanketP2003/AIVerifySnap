@@ -37,14 +37,14 @@ export default function HowItWorksPage() {
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-4">
                     <Link
                         href="/detect"
-                        className="w-full sm:w-auto px-8 py-4 bg-foreground text-background font-semibold rounded-full hover:bg-foreground/90 transition-all text-base shadow-md flex items-center justify-center gap-2"
+                        className="w-full sm:w-auto px-7 py-3.5 bg-foreground text-background font-semibold rounded-xl hover:bg-foreground/90 transition-all text-sm shadow-sm flex items-center justify-center gap-2"
                     >
-                        <PlusCircle className="w-5 h-5" />
+                        <PlusCircle className="w-4 h-4" />
                         <span>Analyze an Image</span>
                     </Link>
                     <Link
                         href="/dashboard"
-                        className="w-full sm:w-auto px-8 py-4 bg-card border border-border text-foreground font-semibold rounded-full hover:bg-muted transition-all text-base shadow-sm flex items-center justify-center gap-2"
+                        className="w-full sm:w-auto px-7 py-3.5 bg-card border border-border text-foreground font-semibold rounded-xl hover:bg-muted transition-all text-sm shadow-sm flex items-center justify-center gap-2"
                     >
                         <span>Open Dashboard</span>
                         <ArrowRight className="w-4 h-4 text-muted-foreground" />
@@ -66,11 +66,11 @@ export default function HowItWorksPage() {
 
                     <div className="space-y-8">
                         {/* Step 1 */}
-                        <div className="p-8 sm:p-10 rounded-3xl bg-card border border-border shadow-sm grid md:grid-cols-12 gap-8 items-center">
+                        <div className="p-8 sm:p-10 rounded-2xl bg-card border border-border/80 shadow-sm grid md:grid-cols-12 gap-8 items-center">
                             <div className="md:col-span-4 space-y-3">
                                 <div className="flex items-center gap-3">
                                     <span className="font-mono text-3xl font-black text-primary/30">01</span>
-                                    <div className="p-2.5 rounded-2xl bg-primary/10 text-primary">
+                                    <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20">
                                         <UploadCloud className="w-5 h-5" />
                                     </div>
                                 </div>
@@ -81,7 +81,7 @@ export default function HowItWorksPage() {
                                     Submit your target photograph in JPEG, PNG, or WebP format.
                                 </p>
                             </div>
-                            <div className="md:col-span-8 p-6 rounded-2xl bg-muted/30 border border-border/40 space-y-3 text-xs text-muted-foreground leading-relaxed">
+                            <div className="md:col-span-8 p-6 rounded-xl bg-muted/30 border border-border/40 space-y-3 text-xs text-muted-foreground leading-relaxed">
                                 <div className="flex items-start gap-2.5">
                                     <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
                                     <span>
@@ -104,11 +104,11 @@ export default function HowItWorksPage() {
                         </div>
 
                         {/* Step 2 */}
-                        <div className="p-8 sm:p-10 rounded-3xl bg-card border border-border shadow-sm grid md:grid-cols-12 gap-8 items-center">
+                        <div className="p-8 sm:p-10 rounded-2xl bg-card border border-border/80 shadow-sm grid md:grid-cols-12 gap-8 items-center">
                             <div className="md:col-span-4 space-y-3">
                                 <div className="flex items-center gap-3">
                                     <span className="font-mono text-3xl font-black text-primary/30">02</span>
-                                    <div className="p-2.5 rounded-2xl bg-primary/10 text-primary">
+                                    <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20">
                                         <Cpu className="w-5 h-5" />
                                     </div>
                                 </div>
@@ -119,7 +119,7 @@ export default function HowItWorksPage() {
                                     The image enters concurrent neural and mathematical evaluation pipelines.
                                 </p>
                             </div>
-                            <div className="md:col-span-8 p-6 rounded-2xl bg-muted/30 border border-border/40 space-y-3 text-xs text-muted-foreground leading-relaxed">
+                            <div className="md:col-span-8 p-6 rounded-xl bg-muted/30 border border-border/40 space-y-3 text-xs text-muted-foreground leading-relaxed">
                                 <div className="flex items-start gap-2.5">
                                     <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
                                     <span>
@@ -142,11 +142,11 @@ export default function HowItWorksPage() {
                         </div>
 
                         {/* Step 3 */}
-                        <div className="p-8 sm:p-10 rounded-3xl bg-card border border-border shadow-sm grid md:grid-cols-12 gap-8 items-center">
+                        <div className="p-8 sm:p-10 rounded-2xl bg-card border border-border/80 shadow-sm grid md:grid-cols-12 gap-8 items-center">
                             <div className="md:col-span-4 space-y-3">
                                 <div className="flex items-center gap-3">
                                     <span className="font-mono text-3xl font-black text-primary/30">03</span>
-                                    <div className="p-2.5 rounded-2xl bg-primary/10 text-primary">
+                                    <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20">
                                         <FileCheck className="w-5 h-5" />
                                     </div>
                                 </div>
@@ -157,7 +157,7 @@ export default function HowItWorksPage() {
                                     Review the synthesized forensic results and export verifiable records.
                                 </p>
                             </div>
-                            <div className="md:col-span-8 p-6 rounded-2xl bg-muted/30 border border-border/40 space-y-3 text-xs text-muted-foreground leading-relaxed">
+                            <div className="md:col-span-8 p-6 rounded-xl bg-muted/30 border border-border/40 space-y-3 text-xs text-muted-foreground leading-relaxed">
                                 <div className="flex items-start gap-2.5">
                                     <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
                                     <span>
@@ -181,7 +181,7 @@ export default function HowItWorksPage() {
                     </div>
 
                     {/* Scientific Disclaimer */}
-                    <div className="p-6 rounded-3xl bg-card border border-border text-center space-y-3 max-w-3xl mx-auto shadow-sm">
+                    <div className="p-6 rounded-2xl bg-card border border-border/80 text-center space-y-3 max-w-3xl mx-auto shadow-sm">
                         <div className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                             <AlertCircle className="w-4 h-4 text-[#e57a40]" />
                             <span>Scientific Decision Support Notice</span>

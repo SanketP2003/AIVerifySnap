@@ -19,32 +19,32 @@ export function ReportCard({
 }: ReportCardProps) {
     const resultColor =
         result === "Real"
-            ? "text-green-600"
+            ? "text-green-600 dark:text-green-400"
             : result === "Suspicious"
-                ? "text-yellow-600"
+                ? "text-yellow-600 dark:text-yellow-400"
                 : "text-destructive";
 
     return (
-        <div className="flex flex-col rounded-3xl border border-border bg-card p-6 sm:p-7 shadow-sm hover:border-primary/20 transition-all duration-300">
-            <div className="flex items-center justify-between pb-4 mb-4 border-b border-border">
+        <div className="flex flex-col rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-sm hover:border-foreground/20 transition-all duration-300">
+            <div className="flex items-center justify-between pb-4 mb-4 border-b border-border/80">
                 <div className="flex items-center gap-2">
-                    <Fingerprint className="w-5 h-5 text-primary" />
-                    <h2 className="text-xl font-bold tracking-tight">Forensic Analysis</h2>
+                    <Fingerprint className="w-4 h-4 text-primary" />
+                    <h2 className="text-base sm:text-lg font-bold tracking-tight font-sans">Forensic Analysis Summary</h2>
                 </div>
                 <ResultBadge status={result} size="md" />
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pb-6 mb-6 border-b border-border">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pb-6 mb-5 border-b border-border/80">
                 <div className="flex flex-col text-center sm:text-left">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                    <p className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground mb-1 font-semibold">
                         Detection Verdict
                     </p>
-                    <h3 className={`text-3xl font-black tracking-tight ${resultColor}`}>
+                    <h3 className={`text-2xl sm:text-3xl font-black tracking-tight ${resultColor}`}>
                         {result}
                     </h3>
-                    <p className="text-xs text-muted-foreground mt-2 max-w-xs">
+                    <p className="text-xs text-muted-foreground mt-2 max-w-sm leading-relaxed">
                         {result === "Real"
-                            ? "Natural compression signatures and authentic camera artifacts detected."
+                            ? "Natural compression signatures and authentic camera optical characteristics detected."
                             : result === "AI Generated"
                                 ? "Synthetic frequency anomalies and neural generation traces identified."
                                 : "Inconclusive artifacts present. Manual forensic verification recommended."}
@@ -55,33 +55,33 @@ export function ReportCard({
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
-                <div className="flex flex-col justify-between bg-muted/40 p-3.5 rounded-2xl border border-border/60">
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium mb-1.5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                <div className="flex flex-col justify-between bg-muted/40 p-3 rounded-xl border border-border/60">
+                    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium mb-1">
                         <FileCheck2 className="w-3.5 h-3.5 text-primary" />
                         <span>ELA Match Score</span>
                     </div>
-                    <span className="font-semibold text-foreground text-xs sm:text-sm font-mono truncate" title={elaScore}>
+                    <span className="font-semibold text-foreground font-mono truncate" title={elaScore}>
                         {elaScore}
                     </span>
                 </div>
 
-                <div className="flex flex-col justify-between bg-muted/40 p-3.5 rounded-2xl border border-border/60">
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium mb-1.5">
+                <div className="flex flex-col justify-between bg-muted/40 p-3 rounded-xl border border-border/60">
+                    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium mb-1">
                         <Cpu className="w-3.5 h-3.5 text-primary" />
                         <span>Inference Engine</span>
                     </div>
-                    <span className="font-semibold text-foreground text-xs sm:text-sm truncate" title={modelName}>
+                    <span className="font-semibold text-foreground truncate" title={modelName}>
                         {modelName}
                     </span>
                 </div>
 
-                <div className="flex flex-col justify-between bg-muted/40 p-3.5 rounded-2xl border border-border/60">
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium mb-1.5">
+                <div className="flex flex-col justify-between bg-muted/40 p-3 rounded-xl border border-border/60">
+                    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium mb-1">
                         <Clock className="w-3.5 h-3.5 text-primary" />
                         <span>Timestamp</span>
                     </div>
-                    <span className="font-semibold text-foreground text-xs sm:text-sm truncate" title={timestamp}>
+                    <span className="font-semibold text-foreground font-mono text-[11px] truncate" title={timestamp}>
                         {timestamp}
                     </span>
                 </div>

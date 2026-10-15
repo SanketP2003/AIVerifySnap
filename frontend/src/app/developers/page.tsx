@@ -222,7 +222,7 @@ axios.post('http://localhost:8080/detection/analyze', form, {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 space-y-8">
                 {/* API Key Management Card */}
-                <div className="p-6 rounded-3xl bg-card border border-border shadow-sm space-y-4">
+                <div className="p-6 rounded-2xl bg-card border border-border/80 shadow-sm space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="space-y-1">
                             <h3 className="text-base font-bold flex items-center gap-2">
@@ -301,7 +301,7 @@ axios.post('http://localhost:8080/detection/analyze', form, {
                         className="grid lg:grid-cols-12 gap-8 items-start"
                     >
                         {/* Request Builder */}
-                        <div className="lg:col-span-5 bg-card p-6 rounded-3xl border border-border shadow-sm space-y-5">
+                        <div className="lg:col-span-5 bg-card p-6 rounded-2xl border border-border/80 shadow-sm space-y-5">
                             <div className="space-y-1">
                                 <h3 className="font-bold text-sm">HTTP Request Configuration</h3>
                                 <p className="text-xs text-muted-foreground">Select an endpoint to execute directly against the live backend.</p>
@@ -345,7 +345,7 @@ axios.post('http://localhost:8080/detection/analyze', form, {
                                 <button
                                     onClick={handleExecuteRequest}
                                     disabled={requestLoading}
-                                    className="w-full py-3 rounded-2xl bg-foreground text-background font-bold text-xs hover:bg-foreground/90 transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+                                    className="w-full py-3 rounded-xl bg-foreground text-background font-bold text-xs uppercase tracking-wider hover:bg-foreground/90 transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
                                 >
                                     {requestLoading ? (
                                         <>
@@ -363,7 +363,7 @@ axios.post('http://localhost:8080/detection/analyze', form, {
                         </div>
 
                         {/* Response Console */}
-                        <div className="lg:col-span-7 bg-card p-6 rounded-3xl border border-border shadow-sm space-y-4">
+                        <div className="lg:col-span-7 bg-card p-6 rounded-2xl border border-border/80 shadow-sm space-y-4">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <Terminal className="w-4 h-4 text-primary" />
@@ -400,7 +400,7 @@ axios.post('http://localhost:8080/detection/analyze', form, {
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-card p-6 sm:p-8 rounded-3xl border border-border shadow-sm space-y-6"
+                        className="bg-card p-6 sm:p-8 rounded-2xl border border-border/80 shadow-sm space-y-6"
                     >
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                             <div className="flex bg-muted/60 p-1 rounded-xl border border-border/50 text-xs font-semibold">
@@ -452,39 +452,39 @@ axios.post('http://localhost:8080/detection/analyze', form, {
                         animate={{ opacity: 1, y: 0 }}
                         className="grid grid-cols-1 md:grid-cols-3 gap-6"
                     >
-                        <div className="p-6 rounded-3xl bg-card border border-border shadow-sm space-y-4">
-                            <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                        <div className="p-6 rounded-2xl bg-card border border-border/80 shadow-sm space-y-4">
+                            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
                                 <Globe className="w-5 h-5" />
                             </div>
                             <div className="space-y-1">
                                 <h4 className="font-bold text-base">Next.js 14 Frontend Layer</h4>
-                                <p className="text-xs text-muted-foreground">Port :3000</p>
+                                <p className="text-xs text-muted-foreground font-mono">Port :3000</p>
                             </div>
                             <p className="text-xs text-muted-foreground leading-relaxed">
                                 React 18 client with App Router, Clerk authentication integration, client-side canvas image downsampling, and cryptographic PDF generation.
                             </p>
                         </div>
 
-                        <div className="p-6 rounded-3xl bg-card border border-border shadow-sm space-y-4">
-                            <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                        <div className="p-6 rounded-2xl bg-card border border-border/80 shadow-sm space-y-4">
+                            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center border border-emerald-500/20">
                                 <Server className="w-5 h-5" />
                             </div>
                             <div className="space-y-1">
                                 <h4 className="font-bold text-base">Spring Boot 3.2 Backend</h4>
-                                <p className="text-xs text-muted-foreground">Port :8080</p>
+                                <p className="text-xs text-muted-foreground font-mono">Port :8080</p>
                             </div>
                             <p className="text-xs text-muted-foreground leading-relaxed">
                                 Java 25 enterprise engine handling quota validation, bulk multi-file aggregation, audit history persistence, and OpenAPI Swagger documentation.
                             </p>
                         </div>
 
-                        <div className="p-6 rounded-3xl bg-card border border-border shadow-sm space-y-4">
-                            <div className="w-10 h-10 rounded-2xl bg-purple-500/10 text-purple-500 flex items-center justify-center">
+                        <div className="p-6 rounded-2xl bg-card border border-border/80 shadow-sm space-y-4">
+                            <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center border border-purple-500/20">
                                 <Cpu className="w-5 h-5" />
                             </div>
                             <div className="space-y-1">
                                 <h4 className="font-bold text-base">FastAPI + PyTorch ML Service</h4>
-                                <p className="text-xs text-muted-foreground">Port :8000</p>
+                                <p className="text-xs text-muted-foreground font-mono">Port :8000</p>
                             </div>
                             <p className="text-xs text-muted-foreground leading-relaxed">
                                 Asynchronous neural inference engine computing Error Level Analysis (ELA) residuals and SigLIP Vision Transformer deepfake probability scores.

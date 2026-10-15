@@ -359,48 +359,48 @@ export default function DetectPage() {
     };
 
     return (
-        <div className="min-h-[calc(100vh-4rem)] p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-8">
+        <div className="min-h-[calc(100vh-4rem)] p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-6">
             {/* Mode Switcher Banner (Single vs Bulk) */}
             {!analyzing && !resultReady && (
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-3 rounded-2xl bg-card border border-border">
-                    <div className="flex items-center gap-1.5 p-1 bg-muted/60 rounded-xl border border-border/40">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-3 rounded-xl bg-card border border-border shadow-sm">
+                    <div className="flex items-center gap-1 p-1 bg-muted/60 rounded-lg border border-border/40">
                         <button
                             onClick={() => setScanMode("single")}
-                            className={`px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all flex items-center gap-2 ${
+                            className={`px-3.5 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
                                 scanMode === "single"
                                     ? "bg-foreground text-background shadow-sm"
                                     : "text-muted-foreground hover:text-foreground"
                             }`}
                         >
-                            <ShieldCheck className="w-4 h-4" />
-                            Single Image Inspection
+                            <ShieldCheck className="w-3.5 h-3.5" />
+                            <span>Single Image Inspection</span>
                         </button>
                         <button
                             onClick={() => setScanMode("bulk")}
-                            className={`px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all flex items-center gap-2 ${
+                            className={`px-3.5 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
                                 scanMode === "bulk"
                                     ? "bg-foreground text-background shadow-sm"
                                     : "text-muted-foreground hover:text-foreground"
                             }`}
                         >
-                            <Files className="w-4 h-4" />
-                            Bulk Multi-Image Scan
-                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary/20 text-primary">
+                            <Files className="w-3.5 h-3.5" />
+                            <span>Bulk Multi-Image Scan</span>
+                            <span className="px-1.5 py-0.2 rounded text-[10px] font-mono font-bold bg-primary/20 text-primary">
                                 Up to 50
                             </span>
                         </button>
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <div className="text-xs text-muted-foreground hidden md:block">
-                            Current Plan: <span className="font-bold text-foreground">{userPlan}</span>
+                        <div className="text-xs text-muted-foreground hidden md:block font-mono">
+                            Plan: <span className="font-bold text-foreground">{userPlan}</span>
                         </div>
                         <Link
                             href="/pricing"
-                            className="px-3.5 py-1.5 rounded-xl border border-border text-xs font-semibold hover:bg-muted transition-colors flex items-center gap-1.5"
+                            className="px-3 py-1.5 rounded-lg border border-border text-xs font-semibold hover:bg-muted transition-colors flex items-center gap-1.5"
                         >
                             <Sparkles className="w-3.5 h-3.5 text-primary" />
-                            Manage Plan
+                            <span>Manage Plan</span>
                         </Link>
                     </div>
                 </div>
@@ -411,26 +411,26 @@ export default function DetectPage() {
                 <motion.div
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="space-y-8"
+                    className="space-y-6"
                 >
-                    <div className="text-center space-y-3 max-w-2xl mx-auto">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold uppercase tracking-wider">
+                    <div className="text-center space-y-2 max-w-2xl mx-auto">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-mono font-semibold uppercase tracking-wider">
                             <Files className="w-3.5 h-3.5" />
-                            Enterprise Bulk Forensics
+                            <span>Enterprise Bulk Forensics</span>
                         </div>
-                        <h1 className="text-3xl sm:text-4xl font-black tracking-tight">
+                        <h1 className="text-2xl sm:text-3xl font-black tracking-tight font-sans">
                             Bulk Deepfake Verification Queue
                         </h1>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                             Analyze entire albums or batches simultaneously. The Professional plan unlocks up to 50 images in one batch with parallel neural inference.
                         </p>
                     </div>
 
                     {/* Plan Quota Alert */}
                     {userPlan === "STARTER" && (
-                        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-4 max-w-3xl mx-auto">
+                        <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-4 max-w-3xl mx-auto">
                             <div className="flex items-center gap-3">
-                                <Lock className="w-5 h-5 text-amber-500 shrink-0" />
+                                <Lock className="w-4 h-4 text-amber-500 shrink-0" />
                                 <div className="text-xs">
                                     <span className="font-bold text-foreground">Starter Free Tier Active:</span>{" "}
                                     <span className="text-muted-foreground">Bulk multi-file scanning is limited to 1 image on Starter. Upgrade to Professional to scan up to 50 images.</span>
@@ -438,16 +438,16 @@ export default function DetectPage() {
                             </div>
                             <Link
                                 href="/pricing"
-                                className="px-4 py-2 rounded-xl bg-amber-500 text-black text-xs font-bold hover:bg-amber-400 shrink-0"
+                                className="px-3 py-1.5 rounded-lg bg-amber-500 text-black text-xs font-bold hover:bg-amber-400 shrink-0"
                             >
-                                Upgrade to Pro
+                                Upgrade
                             </Link>
                         </div>
                     )}
 
                     {/* Dropzone & File Selection */}
-                    <div className="max-w-3xl mx-auto bg-card p-6 sm:p-8 rounded-3xl border border-border shadow-sm space-y-6">
-                        <div className="border-2 border-dashed border-border rounded-2xl p-8 text-center hover:border-primary/50 transition-colors">
+                    <div className="max-w-3xl mx-auto bg-card p-5 sm:p-6 rounded-xl border border-border shadow-sm space-y-4">
+                        <div className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-primary/50 transition-colors">
                             <input
                                 type="file"
                                 id="bulk-upload-input"
@@ -602,7 +602,7 @@ export default function DetectPage() {
                             </div>
 
                             {/* Results Table */}
-                            <div className="bg-card border border-border rounded-3xl overflow-hidden shadow-sm">
+                            <div className="bg-card border border-border/80 rounded-2xl overflow-hidden shadow-sm">
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left text-xs">
                                         <thead>
@@ -662,43 +662,43 @@ export default function DetectPage() {
                             initial={{ opacity: 0, y: 15 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.98 }}
-                            className="flex flex-col items-center justify-center min-h-[65vh] py-6"
+                            className="flex flex-col items-center justify-center min-h-[60vh] py-4"
                         >
-                            <div className="max-w-2xl w-full text-center space-y-6">
-                                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold uppercase tracking-wider">
-                                    <ShieldCheck className="w-4 h-4" />
+                            <div className="max-w-2xl w-full text-center space-y-5">
+                                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-mono font-semibold uppercase tracking-wider">
+                                    <ShieldCheck className="w-3.5 h-3.5" />
                                     <span>Multi-Modal Forensic Verification</span>
                                 </div>
 
-                                <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-foreground text-balance">
+                                <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-foreground font-sans text-balance">
                                     Deepfake & AI Image Detector
                                 </h1>
 
-                                <p className="text-muted-foreground text-balance text-sm sm:text-base md:text-lg max-w-xl mx-auto leading-relaxed">
+                                <p className="text-muted-foreground text-balance text-xs sm:text-sm md:text-base max-w-xl mx-auto leading-relaxed">
                                     Upload any image to reveal compression discrepancies, generative diffusion noise, and high-frequency forensic artifacts.
                                 </p>
 
-                                <div className="bg-card p-4 sm:p-6 rounded-3xl shadow-sm border border-border">
+                                <div className="bg-card p-3 sm:p-5 rounded-2xl shadow-sm border border-border">
                                     <UploadDropzone onUpload={handleUpload} isUploading={false} />
                                 </div>
 
                                 {/* Technical Stack Badges */}
-                                <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-muted-foreground">
+                                <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-5 text-xs text-muted-foreground font-mono">
                                     <div className="flex items-center gap-1.5">
-                                        <Cpu className="w-4 h-4 text-primary" />
+                                        <Cpu className="w-3.5 h-3.5 text-primary" />
                                         <span>SigLIP Vision Transformer</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                        <Layers className="w-4 h-4 text-primary" />
+                                        <Layers className="w-3.5 h-3.5 text-primary" />
                                         <span>Error Level Analysis (ELA)</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                        <Sparkles className="w-4 h-4 text-primary" />
+                                        <Sparkles className="w-3.5 h-3.5 text-primary" />
                                         <span>Attention Saliency Heatmaps</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                        <Globe className="w-4 h-4 text-primary" />
-                                        <span>Google Lens Reverse Provenance</span>
+                                        <Globe className="w-3.5 h-3.5 text-primary" />
+                                        <span>Google Lens Provenance</span>
                                     </div>
                                 </div>
                             </div>
@@ -715,17 +715,17 @@ export default function DetectPage() {
                             className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6"
                         >
                             <div className="relative">
-                                <div className="w-24 h-24 rounded-full border-4 border-muted border-t-primary animate-spin" />
+                                <div className="w-20 h-20 rounded-full border-4 border-muted border-t-primary animate-spin" />
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                    <Cpu className="w-8 h-8 text-primary" />
+                                    <Cpu className="w-7 h-7 text-primary" />
                                 </div>
                             </div>
 
-                            <div className="space-y-2 max-w-md">
-                                <h3 className="text-lg font-bold text-foreground">
+                            <div className="space-y-1.5 max-w-md">
+                                <h3 className="text-base font-bold text-foreground font-sans">
                                     Deep Neural Forensic Inspection in Progress
                                 </h3>
-                                <p className="text-xs text-muted-foreground h-6 animate-pulse">
+                                <p className="text-xs text-muted-foreground font-mono h-6 animate-pulse">
                                     {analysisSteps[currentStepIndex]}
                                 </p>
                             </div>
@@ -738,14 +738,14 @@ export default function DetectPage() {
                             key="error-section"
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="max-w-md mx-auto p-6 rounded-3xl bg-card border border-destructive/30 text-center space-y-4"
+                            className="max-w-md mx-auto p-5 sm:p-6 rounded-xl bg-card border border-destructive/30 text-center space-y-3.5 shadow-sm"
                         >
-                            <AlertCircle className="w-10 h-10 text-destructive mx-auto" />
-                            <h3 className="text-base font-bold text-foreground">Analysis Exception</h3>
+                            <AlertCircle className="w-8 h-8 text-destructive mx-auto" />
+                            <h3 className="text-sm font-bold text-foreground font-sans">Analysis Exception</h3>
                             <p className="text-xs text-muted-foreground leading-relaxed">{errorMessage}</p>
                             <button
                                 onClick={handleReset}
-                                className="px-5 py-2.5 rounded-full bg-foreground text-background text-xs font-semibold hover:bg-foreground/90 transition-all"
+                                className="px-4 py-2 rounded-lg bg-foreground text-background text-xs font-semibold hover:bg-foreground/90 transition-all shadow-sm"
                             >
                                 Try Another Image
                             </button>
@@ -758,27 +758,27 @@ export default function DetectPage() {
                             key="result-section"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="space-y-8"
+                            className="space-y-6"
                         >
                             {/* Top Context & Action Toolbar */}
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-border/80 gap-4">
                                 <div>
                                     <div className="flex items-center gap-2">
-                                        <Cpu className="w-4 h-4 text-primary" />
-                                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                        <Cpu className="w-3.5 h-3.5 text-primary" />
+                                        <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-muted-foreground">
                                             Forensic Verification Inspection
                                         </span>
                                     </div>
-                                    <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground mt-0.5">
+                                    <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground font-sans mt-0.5">
                                         Analysis Dossier & Verdict
                                     </h1>
                                 </div>
 
-                                <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+                                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                                     <button
                                         type="button"
                                         onClick={handleReset}
-                                        className="px-3.5 py-2 bg-card border border-border hover:bg-muted text-foreground text-xs font-semibold rounded-xl transition-all shadow-sm flex items-center gap-1.5 focus-ring"
+                                        className="px-3 py-1.5 bg-card border border-border hover:bg-muted text-foreground text-xs font-semibold rounded-lg transition-all shadow-sm flex items-center gap-1.5 focus-ring"
                                     >
                                         <RefreshCw className="w-3.5 h-3.5" />
                                         <span>New Scan</span>
@@ -788,7 +788,7 @@ export default function DetectPage() {
                                     <button
                                         type="button"
                                         onClick={handleDownloadPdf}
-                                        className="px-4 py-2 bg-foreground text-background text-xs font-bold rounded-xl hover:bg-foreground/90 transition-all shadow-sm flex items-center gap-1.5 focus-ring"
+                                        className="px-3.5 py-1.5 bg-foreground text-background text-xs font-bold rounded-lg hover:bg-foreground/90 transition-all shadow-sm flex items-center gap-1.5 focus-ring"
                                     >
                                         <Download className="w-3.5 h-3.5" />
                                         <span>Download PDF Report</span>
@@ -797,7 +797,7 @@ export default function DetectPage() {
                                     <button
                                         type="button"
                                         onClick={handleDownloadJson}
-                                        className="px-3.5 py-2 bg-card border border-border hover:bg-muted text-foreground text-xs font-semibold rounded-xl transition-all shadow-sm flex items-center gap-1.5 focus-ring"
+                                        className="px-3 py-1.5 bg-card border border-border hover:bg-muted text-foreground text-xs font-semibold rounded-lg transition-all shadow-sm flex items-center gap-1.5 focus-ring"
                                     >
                                         <Download className="w-3.5 h-3.5" />
                                         <span>JSON</span>
@@ -805,7 +805,7 @@ export default function DetectPage() {
 
                                     <Link
                                         href="/history"
-                                        className="px-3.5 py-2 bg-muted text-foreground text-xs font-semibold rounded-xl hover:bg-muted/80 transition-all flex items-center gap-1.5 focus-ring"
+                                        className="px-3 py-1.5 bg-muted text-foreground text-xs font-semibold rounded-lg hover:bg-muted/80 transition-all flex items-center gap-1.5 focus-ring"
                                     >
                                         <FileText className="w-3.5 h-3.5" />
                                         <span>History</span>
@@ -814,31 +814,31 @@ export default function DetectPage() {
                             </div>
 
                             {/* Main Inspection Grid */}
-                            <div className="grid lg:grid-cols-12 gap-8 items-start">
+                            <div className="grid lg:grid-cols-12 gap-6 items-start">
                                 {/* Left Column: Visual Forensics Canvas (7 cols) */}
                                 <div className="lg:col-span-7 space-y-4">
-                                    <div className="bg-card p-5 sm:p-6 rounded-3xl border border-border shadow-sm space-y-4">
+                                    <div className="bg-card p-4 sm:p-5 rounded-xl border border-border shadow-sm space-y-3.5">
                                         {/* View Mode Selector */}
                                         <div className="flex flex-wrap items-center justify-between gap-2">
-                                            <div className="flex bg-muted/60 p-1 rounded-2xl border border-border/50 text-xs font-semibold">
+                                            <div className="flex bg-muted/60 p-1 rounded-lg border border-border/50 text-xs font-semibold">
                                                 <button
                                                     type="button"
                                                     onClick={() => setViewMode("Slider")}
-                                                    className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1 ${
+                                                    className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1 ${
                                                         viewMode === "Slider"
-                                                            ? "bg-background shadow-sm text-foreground"
+                                                            ? "bg-card shadow-sm text-foreground font-bold"
                                                             : "text-muted-foreground hover:text-foreground"
                                                     }`}
                                                 >
-                                                    <SlidersHorizontal className="w-3.5 h-3.5" />
-                                                    <span>Comparison Slider</span>
+                                                    <SlidersHorizontal className="w-3.5 h-3.5 text-[#e57a40]" />
+                                                    <span>Split Slider</span>
                                                 </button>
                                                 <button
                                                     type="button"
                                                     onClick={() => setViewMode("Original")}
-                                                    className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1 ${
+                                                    className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1 ${
                                                         viewMode === "Original"
-                                                            ? "bg-background shadow-sm text-foreground"
+                                                            ? "bg-card shadow-sm text-foreground font-bold"
                                                             : "text-muted-foreground hover:text-foreground"
                                                     }`}
                                                 >
@@ -848,9 +848,9 @@ export default function DetectPage() {
                                                 <button
                                                     type="button"
                                                     onClick={() => setViewMode("ELA")}
-                                                    className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1 ${
+                                                    className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1 ${
                                                         viewMode === "ELA"
-                                                            ? "bg-background shadow-sm text-foreground"
+                                                            ? "bg-card shadow-sm text-foreground font-bold"
                                                             : "text-muted-foreground hover:text-foreground"
                                                     }`}
                                                 >
@@ -860,21 +860,21 @@ export default function DetectPage() {
                                                 <button
                                                     type="button"
                                                     onClick={() => setViewMode("Heatmap")}
-                                                    className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1 ${
+                                                    className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1 ${
                                                         viewMode === "Heatmap"
-                                                            ? "bg-background shadow-sm text-foreground"
+                                                            ? "bg-card shadow-sm text-foreground font-bold"
                                                             : "text-muted-foreground hover:text-foreground"
                                                     }`}
                                                 >
-                                                    <Sparkles className="w-3.5 h-3.5" />
-                                                    <span>Attention Map</span>
+                                                    <Sparkles className="w-3.5 h-3.5 text-primary" />
+                                                    <span>Attention</span>
                                                 </button>
                                             </div>
 
                                             <button
                                                 type="button"
                                                 onClick={() => setIsZoomed(!isZoomed)}
-                                                className="p-2 rounded-xl border border-border hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                                                className="p-1.5 rounded-lg border border-border hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
                                                 title={isZoomed ? "Reset zoom" : "1.5x Inspection zoom"}
                                             >
                                                 {isZoomed ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
@@ -882,7 +882,7 @@ export default function DetectPage() {
                                         </div>
 
                                         {/* Canvas Display */}
-                                        <div className="relative rounded-2xl overflow-hidden bg-neutral-950 border border-border/80 aspect-[4/3] flex items-center justify-center">
+                                        <div className="relative rounded-xl overflow-hidden bg-neutral-950 border border-border/80 aspect-[4/3] flex items-center justify-center">
                                             {viewMode === "Slider" && (
                                                 <ImageComparisonSlider
                                                     originalImage={imageUrl}
@@ -952,12 +952,12 @@ export default function DetectPage() {
                                     </div>
 
                                     {/* Google Lens / Reverse Visual Search Trigger */}
-                                    <div className="p-5 rounded-3xl bg-card border border-border shadow-sm space-y-4">
+                                    <div className="p-4 sm:p-5 rounded-xl bg-card border border-border shadow-sm space-y-3">
                                         <div className="flex items-center justify-between">
                                             <div className="space-y-0.5">
                                                 <div className="flex items-center gap-2">
                                                     <Globe className="w-4 h-4 text-primary" />
-                                                    <h3 className="text-sm font-bold text-foreground">
+                                                    <h3 className="text-xs sm:text-sm font-bold text-foreground font-sans">
                                                         Google Lens & Web Reverse Visual Matching
                                                     </h3>
                                                 </div>
@@ -969,7 +969,7 @@ export default function DetectPage() {
                                             <button
                                                 onClick={handleTriggerReverseSearch}
                                                 disabled={reverseSearching}
-                                                className="px-4 py-2 rounded-xl bg-primary/10 border border-primary/20 text-primary text-xs font-bold hover:bg-primary/20 transition-all flex items-center gap-1.5 shrink-0"
+                                                className="px-3.5 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-primary text-xs font-bold hover:bg-primary/20 transition-all flex items-center gap-1.5 shrink-0"
                                             >
                                                 {reverseSearching ? (
                                                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -983,25 +983,25 @@ export default function DetectPage() {
                                         {/* Reverse Search Results Display */}
                                         {showReversePanel && reverseResult && (
                                             <div className="pt-2 border-t border-border/60 space-y-3">
-                                                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                                <div className="flex items-center justify-between text-xs text-muted-foreground font-mono">
                                                     <span>Matched {reverseResult.reverse_matches_count} Online Sources</span>
-                                                    <span className="font-mono">{reverseResult.search_engine}</span>
+                                                    <span>{reverseResult.search_engine}</span>
                                                 </div>
 
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                                                     {reverseResult.visual_matches.map((vm, vIdx) => (
                                                         <a
                                                             key={vIdx}
                                                             href={vm.link}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="flex items-center gap-3 p-3 rounded-2xl bg-muted/30 border border-border/60 hover:bg-muted/60 transition-colors group"
+                                                            className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/30 border border-border/60 hover:bg-muted/60 transition-colors group"
                                                         >
                                                             {/* eslint-disable-next-line @next/next/no-img-element */}
                                                             <img
                                                                 src={vm.thumbnail}
                                                                 alt=""
-                                                                className="w-12 h-12 rounded-xl object-cover shrink-0 border border-border"
+                                                                className="w-11 h-11 rounded-md object-cover shrink-0 border border-border"
                                                             />
                                                             <div className="min-w-0 flex-1 space-y-0.5">
                                                                 <div className="flex items-center gap-1 text-[11px] font-bold text-foreground truncate group-hover:text-primary">
@@ -1010,10 +1010,10 @@ export default function DetectPage() {
                                                                 </div>
                                                                 <p className="text-[10px] text-muted-foreground truncate">{vm.source}</p>
                                                                 <div className="flex items-center gap-2">
-                                                                    <span className="text-[10px] font-bold text-emerald-500">
+                                                                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 font-mono">
                                                                         {vm.similarity_score}% match
                                                                     </span>
-                                                                    <span className="text-[10px] px-1.5 rounded bg-muted text-muted-foreground">
+                                                                    <span className="text-[10px] px-1.5 rounded bg-muted text-muted-foreground font-mono">
                                                                         {vm.match_type}
                                                                     </span>
                                                                 </div>
@@ -1027,7 +1027,7 @@ export default function DetectPage() {
                                 </div>
 
                                 {/* Right Column: Verdict & Metrics Summary (5 cols) */}
-                                <div className="lg:col-span-5 space-y-5">
+                                <div className="lg:col-span-5 space-y-4">
                                     {/* Main Verdict Card */}
                                     <ReportCard
                                         result={detectionResult.prediction === "Fake" ? "AI Generated" : "Real"}
@@ -1039,11 +1039,39 @@ export default function DetectPage() {
                                         timestamp={new Date().toLocaleString()}
                                     />
 
+                                    {/* Cryptographic SHA-256 Fingerprint Card */}
+                                    <div className="p-4 rounded-xl bg-card border border-border shadow-sm space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                                                <Lock className="w-3.5 h-3.5 text-primary" />
+                                                <span>Cryptographic SHA-256 Digest</span>
+                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const hash = fileSha256 || (typeof detectionResult.details?.sha256 === "string" ? detectionResult.details.sha256 : "");
+                                                    if (hash) {
+                                                        navigator.clipboard.writeText(hash);
+                                                        toast.success("SHA-256 hash copied to clipboard");
+                                                    }
+                                                }}
+                                                className="text-[11px] font-mono text-primary hover:underline inline-flex items-center gap-1"
+                                                title="Copy SHA-256 hash"
+                                            >
+                                                <Copy className="w-3 h-3" />
+                                                <span>Copy</span>
+                                            </button>
+                                        </div>
+                                        <div className="p-2 rounded-lg bg-muted/50 border border-border/60 font-mono text-[11px] text-foreground break-all select-all">
+                                            {fileSha256 || (typeof detectionResult.details?.sha256 === "string" ? detectionResult.details.sha256 : "Calculating...")}
+                                        </div>
+                                    </div>
+
                                     {/* Probability Distribution Breakdown */}
                                     {detectionResult.details?.raw_output && (
-                                        <div className="bg-card p-5 sm:p-6 rounded-3xl border border-border shadow-sm space-y-3.5">
+                                        <div className="bg-card p-4 sm:p-5 rounded-xl border border-border shadow-sm space-y-3">
                                             <div className="flex items-center justify-between">
-                                                <h3 className="text-sm font-bold text-foreground tracking-tight">
+                                                <h3 className="text-xs sm:text-sm font-bold text-foreground tracking-tight font-sans">
                                                     Softmax Probability Distribution
                                                 </h3>
                                                 <span className="text-[11px] font-mono text-muted-foreground">
@@ -1051,7 +1079,7 @@ export default function DetectPage() {
                                                 </span>
                                             </div>
 
-                                            <div className="space-y-2.5">
+                                            <div className="space-y-2">
                                                 {detectionResult.details.raw_output.map((item) => {
                                                     const isFake = item.label === "Fake";
                                                     const pct = Math.min(100, Math.max(0, item.score * 100));
@@ -1059,15 +1087,15 @@ export default function DetectPage() {
                                                     return (
                                                         <div key={item.label} className="space-y-1">
                                                             <div className="flex justify-between text-xs font-semibold">
-                                                                <span className={isFake ? "text-rose-500" : "text-emerald-500"}>
+                                                                <span className={isFake ? "text-destructive" : "text-green-600 dark:text-green-400"}>
                                                                     {item.label === "Fake" ? "Synthetic / AI Generated" : "Authentic Subject"}
                                                                 </span>
                                                                 <span className="font-mono">{pct.toFixed(2)}%</span>
                                                             </div>
-                                                            <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                                                            <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
                                                                 <div
                                                                     className={`h-full transition-all duration-500 ${
-                                                                        isFake ? "bg-rose-500" : "bg-emerald-500"
+                                                                        isFake ? "bg-destructive" : "bg-green-600 dark:bg-green-400"
                                                                     }`}
                                                                     style={{ width: `${pct}%` }}
                                                                 />
@@ -1080,42 +1108,42 @@ export default function DetectPage() {
                                     )}
 
                                     {/* Quantitative Signal Statistics Grid */}
-                                    <div className="p-5 rounded-3xl bg-card border border-border shadow-sm space-y-3">
-                                        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                    <div className="p-4 sm:p-5 rounded-xl bg-card border border-border shadow-sm space-y-2.5">
+                                        <h3 className="text-[11px] font-mono font-semibold uppercase tracking-wider text-muted-foreground">
                                             Quantitative Signal Statistics
                                         </h3>
 
-                                        <div className="grid grid-cols-2 gap-3 text-xs">
-                                            <div className="p-3 rounded-xl bg-muted/40 border border-border/50 space-y-1">
-                                                <span className="text-muted-foreground text-[11px]">ELA Mean Error</span>
-                                                <div className="font-mono font-bold text-foreground text-sm">
+                                        <div className="grid grid-cols-2 gap-2 text-xs">
+                                            <div className="p-2.5 rounded-lg bg-muted/40 border border-border/50 space-y-0.5">
+                                                <span className="text-muted-foreground text-[10px] uppercase font-mono">ELA Mean Error</span>
+                                                <div className="font-mono font-bold text-foreground text-xs sm:text-sm">
                                                     {detectionResult.details?.ela_mean !== undefined
                                                         ? Number(detectionResult.details.ela_mean).toFixed(4)
                                                         : "N/A"}
                                                 </div>
                                             </div>
 
-                                            <div className="p-3 rounded-xl bg-muted/40 border border-border/50 space-y-1">
-                                                <span className="text-muted-foreground text-[11px]">ELA Deviation</span>
-                                                <div className="font-mono font-bold text-foreground text-sm">
+                                            <div className="p-2.5 rounded-lg bg-muted/40 border border-border/50 space-y-0.5">
+                                                <span className="text-muted-foreground text-[10px] uppercase font-mono">ELA Deviation</span>
+                                                <div className="font-mono font-bold text-foreground text-xs sm:text-sm">
                                                     {detectionResult.details?.ela_std !== undefined
                                                         ? Number(detectionResult.details.ela_std).toFixed(4)
                                                         : "N/A"}
                                                 </div>
                                             </div>
 
-                                            <div className="p-3 rounded-xl bg-muted/40 border border-border/50 space-y-1">
-                                                <span className="text-muted-foreground text-[11px]">Peak Residue</span>
-                                                <div className="font-mono font-bold text-foreground text-sm">
+                                            <div className="p-2.5 rounded-lg bg-muted/40 border border-border/50 space-y-0.5">
+                                                <span className="text-muted-foreground text-[10px] uppercase font-mono">Peak Residue</span>
+                                                <div className="font-mono font-bold text-foreground text-xs sm:text-sm">
                                                     {detectionResult.details?.ela_max !== undefined
                                                         ? Number(detectionResult.details.ela_max).toFixed(4)
                                                         : "N/A"}
                                                 </div>
                                             </div>
 
-                                            <div className="p-3 rounded-xl bg-muted/40 border border-border/50 space-y-1">
-                                                <span className="text-muted-foreground text-[11px]">Engine Status</span>
-                                                <div className="font-bold text-emerald-500 text-sm truncate">
+                                            <div className="p-2.5 rounded-lg bg-muted/40 border border-border/50 space-y-0.5">
+                                                <span className="text-muted-foreground text-[10px] uppercase font-mono">Engine Status</span>
+                                                <div className="font-bold text-green-600 dark:text-green-400 text-xs sm:text-sm truncate font-mono">
                                                     {detectionResult.model_status || "Online"}
                                                 </div>
                                             </div>
@@ -1123,29 +1151,29 @@ export default function DetectPage() {
                                     </div>
 
                                     {/* Collapsible Raw JSON Inspector */}
-                                    <div className="border border-border rounded-3xl bg-card overflow-hidden shadow-sm">
+                                    <div className="border border-border rounded-xl bg-card overflow-hidden shadow-sm">
                                         <button
                                             type="button"
                                             onClick={() => setShowRawJson(!showRawJson)}
-                                            className="w-full p-4 flex items-center justify-between text-xs font-bold text-foreground hover:bg-muted/40 transition-colors"
+                                            className="w-full p-3.5 flex items-center justify-between text-xs font-bold text-foreground hover:bg-muted/40 transition-colors"
                                         >
-                                            <span>Technical Forensic Payload (Raw JSON)</span>
+                                            <span className="font-mono text-[11px]">Technical Forensic Payload (Raw JSON)</span>
                                             {showRawJson ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                                         </button>
 
                                         {showRawJson && (
-                                            <div className="p-4 border-t border-border/60 bg-muted/20 space-y-3">
+                                            <div className="p-3.5 border-t border-border/60 bg-muted/20 space-y-2.5">
                                                 <div className="flex justify-end">
                                                     <button
                                                         type="button"
                                                         onClick={handleCopyJson}
-                                                        className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1"
+                                                        className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1 font-mono text-[11px]"
                                                     >
                                                         {copiedJson ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
                                                         <span>{copiedJson ? "Copied" : "Copy Payload"}</span>
                                                     </button>
                                                 </div>
-                                                <pre className="font-mono text-[11px] text-muted-foreground overflow-x-auto p-3 rounded-xl bg-muted/60 border border-border/50 max-h-56">
+                                                <pre className="font-mono text-[11px] text-muted-foreground overflow-x-auto p-3 rounded-lg bg-muted/60 border border-border/50 max-h-56">
                                                     {JSON.stringify(detectionResult, null, 2)}
                                                 </pre>
                                             </div>

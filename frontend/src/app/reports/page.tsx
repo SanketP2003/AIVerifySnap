@@ -166,32 +166,32 @@ export default function ReportsCatalogPage() {
 
             {/* Metrics Row */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-5 rounded-3xl bg-card border border-border shadow-sm space-y-1">
-                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <div className="p-5 rounded-2xl bg-card border border-border/80 shadow-sm space-y-1">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
                         Total Reports
                     </span>
                     <div className="text-3xl font-black font-mono text-foreground">{totalScans}</div>
                     <p className="text-[11px] text-muted-foreground">Historical records</p>
                 </div>
 
-                <div className="p-5 rounded-3xl bg-card border border-border shadow-sm space-y-1">
-                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <div className="p-5 rounded-2xl bg-card border border-border/80 shadow-sm space-y-1">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
                         Synthetic Findings
                     </span>
                     <div className="text-3xl font-black font-mono text-destructive">{fakeCount}</div>
                     <p className="text-[11px] text-destructive font-medium">Manipulated frames</p>
                 </div>
 
-                <div className="p-5 rounded-3xl bg-card border border-border shadow-sm space-y-1">
-                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <div className="p-5 rounded-2xl bg-card border border-border/80 shadow-sm space-y-1">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
                         Authentic Findings
                     </span>
-                    <div className="text-3xl font-black font-mono text-green-600">{realCount}</div>
-                    <p className="text-[11px] text-green-600 font-medium">Camera source frames</p>
+                    <div className="text-3xl font-black font-mono text-green-600 dark:text-green-400">{realCount}</div>
+                    <p className="text-[11px] text-green-600 dark:text-green-400 font-medium">Camera source frames</p>
                 </div>
 
-                <div className="p-5 rounded-3xl bg-card border border-border shadow-sm space-y-1">
-                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <div className="p-5 rounded-2xl bg-card border border-border/80 shadow-sm space-y-1">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
                         Cryptographic Hashes
                     </span>
                     <div className="text-3xl font-black font-mono text-foreground flex items-center gap-2">
@@ -203,7 +203,7 @@ export default function ReportsCatalogPage() {
             </div>
 
             {/* Filter and Search Bar */}
-            <div className="p-4 rounded-2xl bg-card border border-border shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="p-4 rounded-xl bg-card border border-border/80 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div className="relative w-full sm:w-80">
                     <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input
@@ -211,7 +211,7 @@ export default function ReportsCatalogPage() {
                         placeholder="Search by ID, filename, or hash..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 bg-muted/40 border border-border/80 rounded-xl text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
+                        className="w-full pl-9 pr-4 py-2 bg-muted/40 border border-border/80 rounded-lg text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground transition-colors"
                     />
                 </div>
 
@@ -220,25 +220,25 @@ export default function ReportsCatalogPage() {
                         <Filter className="w-3.5 h-3.5" />
                         <span>Filter:</span>
                     </span>
-                    <div className="flex rounded-xl bg-muted/60 p-1 border border-border/60 text-xs font-semibold">
+                    <div className="flex rounded-lg bg-muted/60 p-1 border border-border/60 text-xs font-semibold">
                         <button
                             type="button"
                             onClick={() => setStatusFilter("all")}
-                            className={`px-3 py-1 rounded-lg transition-colors ${statusFilter === "all" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                            className={`px-3 py-1 rounded-md transition-colors ${statusFilter === "all" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                         >
                             All ({totalScans})
                         </button>
                         <button
                             type="button"
                             onClick={() => setStatusFilter("fake")}
-                            className={`px-3 py-1 rounded-lg transition-colors ${statusFilter === "fake" ? "bg-background text-destructive shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                            className={`px-3 py-1 rounded-md transition-colors ${statusFilter === "fake" ? "bg-background text-destructive shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                         >
                             Synthetic ({fakeCount})
                         </button>
                         <button
                             type="button"
                             onClick={() => setStatusFilter("real")}
-                            className={`px-3 py-1 rounded-lg transition-colors ${statusFilter === "real" ? "bg-background text-green-600 shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                            className={`px-3 py-1 rounded-md transition-colors ${statusFilter === "real" ? "bg-background text-green-600 dark:text-green-400 shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                         >
                             Authentic ({realCount})
                         </button>
@@ -248,8 +248,8 @@ export default function ReportsCatalogPage() {
 
             {/* Error State */}
             {error && !loading && (
-                <div className="p-12 rounded-3xl bg-destructive/10 border border-destructive/20 text-center space-y-4 shadow-sm">
-                    <div className="w-16 h-16 rounded-full bg-destructive/20 text-destructive flex items-center justify-center mx-auto">
+                <div className="p-12 rounded-2xl bg-destructive/10 border border-destructive/20 text-center space-y-4 shadow-sm">
+                    <div className="w-16 h-16 rounded-2xl bg-destructive/20 text-destructive flex items-center justify-center mx-auto">
                         <FileText className="w-8 h-8" />
                     </div>
                     <div className="space-y-1">
@@ -282,7 +282,7 @@ export default function ReportsCatalogPage() {
                         return (
                             <div
                                 key={item.scanId}
-                                className="p-6 rounded-3xl bg-card border border-border shadow-sm flex flex-col justify-between space-y-4 hover:border-foreground/30 hover:shadow-md transition-all group"
+                                className="p-6 rounded-2xl bg-card border border-border/80 shadow-sm flex flex-col justify-between space-y-4 hover:border-foreground/30 hover:shadow-md transition-all group"
                             >
                                 <div className="space-y-3">
                                     {/* Top Bar of Card */}
@@ -365,8 +365,8 @@ export default function ReportsCatalogPage() {
                     })}
                 </div>
             ) : !error && (
-                <div className="p-12 rounded-3xl bg-card border border-border shadow-sm text-center space-y-4">
-                    <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+                <div className="p-12 rounded-2xl bg-card border border-border/80 shadow-sm text-center space-y-4">
+                    <div className="w-16 h-16 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground border border-border/40">
                         <FileText className="w-8 h-8" />
                     </div>
                     <div className="space-y-1">

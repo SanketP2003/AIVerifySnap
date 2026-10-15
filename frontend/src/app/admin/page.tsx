@@ -18,6 +18,8 @@ interface AdminMetrics {
     confirmedTakedowns: number;
 }
 
+const ADMIN_EMAILS = ["2019sanketpatil@gmail.com"];
+
 export default function AdminPage() {
     const { isLoaded, isSignedIn } = useAuth();
     const { user } = useUser();
@@ -28,8 +30,6 @@ export default function AdminPage() {
     const [health, setHealth] = useState<HealthStatus | null>(null);
     const [syncing, setSyncing] = useState(false);
     const [error, setError] = useState<string | null>(null);
-
-    const ADMIN_EMAILS = ["2019sanketpatil@gmail.com"];
 
     // Role-based verification using Clerk metadata or authorized admin email list
     const isAdmin = useMemo(() => {
@@ -143,8 +143,8 @@ export default function AdminPage() {
     if (isLoaded && isSignedIn && !isAdmin) {
         return (
             <div className="min-h-[calc(100vh-4rem)] p-8 flex items-center justify-center bg-background">
-                <div className="max-w-md w-full bg-card border border-border p-8 rounded-3xl text-center space-y-4 shadow-sm">
-                    <div className="w-14 h-14 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
+                <div className="max-w-md w-full bg-card border border-border p-8 rounded-2xl text-center space-y-4 shadow-sm">
+                    <div className="w-14 h-14 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mx-auto border border-destructive/20">
                         <Shield className="w-7 h-7" />
                     </div>
                     <h2 className="text-xl font-bold text-foreground">Admin Authorization Required</h2>
@@ -216,10 +216,10 @@ export default function AdminPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
             >
-                <div className="bg-card p-6 border border-border rounded-3xl shadow-sm flex flex-col justify-between h-44 hover:border-foreground/20 transition-colors">
+                <div className="bg-card p-6 border border-border/80 rounded-2xl shadow-sm flex flex-col justify-between h-44 hover:border-foreground/20 transition-colors">
                     <div className="flex justify-between items-start">
-                        <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total Scans Ingested</div>
-                        <div className="p-2.5 rounded-2xl bg-primary/10 text-primary">
+                        <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider font-mono">Total Scans Ingested</div>
+                        <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20">
                             <ScanText className="w-4 h-4" />
                         </div>
                     </div>
@@ -233,10 +233,10 @@ export default function AdminPage() {
                     </div>
                 </div>
 
-                <div className="bg-card p-6 border border-border rounded-3xl shadow-sm flex flex-col justify-between h-44 hover:border-foreground/20 transition-colors">
+                <div className="bg-card p-6 border border-border/80 rounded-2xl shadow-sm flex flex-col justify-between h-44 hover:border-foreground/20 transition-colors">
                     <div className="flex justify-between items-start">
-                        <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Synthetic Ratio</div>
-                        <div className="p-2.5 rounded-2xl bg-destructive/10 text-destructive">
+                        <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider font-mono">Synthetic Ratio</div>
+                        <div className="p-2.5 rounded-xl bg-destructive/10 text-destructive border border-destructive/20">
                             <AlertTriangle className="w-4 h-4" />
                         </div>
                     </div>
@@ -251,10 +251,10 @@ export default function AdminPage() {
                     </div>
                 </div>
 
-                <div className="bg-card p-6 border border-border rounded-3xl shadow-sm flex flex-col justify-between h-44 hover:border-foreground/20 transition-colors">
+                <div className="bg-card p-6 border border-border/80 rounded-2xl shadow-sm flex flex-col justify-between h-44 hover:border-foreground/20 transition-colors">
                     <div className="flex justify-between items-start">
-                        <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Protected Identities</div>
-                        <div className="p-2.5 rounded-2xl bg-blue-500/10 text-blue-500">
+                        <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider font-mono">Protected Identities</div>
+                        <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-500 border border-blue-500/20">
                             <Users className="w-4 h-4" />
                         </div>
                     </div>
@@ -268,10 +268,10 @@ export default function AdminPage() {
                     </div>
                 </div>
 
-                <div className="bg-card p-6 border border-border rounded-3xl shadow-sm flex flex-col justify-between h-44 hover:border-foreground/20 transition-colors">
+                <div className="bg-card p-6 border border-border/80 rounded-2xl shadow-sm flex flex-col justify-between h-44 hover:border-foreground/20 transition-colors">
                     <div className="flex justify-between items-start">
-                        <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Takedowns Sent</div>
-                        <div className="p-2.5 rounded-2xl bg-amber-500/10 text-amber-600">
+                        <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider font-mono">Takedowns Sent</div>
+                        <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-600 border border-amber-500/20">
                             <ShieldAlert className="w-4 h-4" />
                         </div>
                     </div>
@@ -291,7 +291,7 @@ export default function AdminPage() {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="bg-card border border-border rounded-3xl p-6 lg:p-8 shadow-sm flex flex-col space-y-6"
+                className="bg-card border border-border/80 rounded-2xl p-6 lg:p-8 shadow-sm flex flex-col space-y-6"
             >
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div>
@@ -299,18 +299,18 @@ export default function AdminPage() {
                         <p className="text-xs text-muted-foreground">Volume of total verified media versus verified synthetic manipulations.</p>
                     </div>
 
-                    <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-full border border-border/40 text-xs font-semibold">
+                    <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border/40 text-xs font-semibold">
                         <button
                             type="button"
                             onClick={() => setTimeRange("7D")}
-                            className={`px-3 py-1.5 rounded-full transition-all ${timeRange === "7D" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                            className={`px-3 py-1.5 rounded-lg transition-all ${timeRange === "7D" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                         >
                             7 Days
                         </button>
                         <button
                             type="button"
                             onClick={() => setTimeRange("30D")}
-                            className={`px-3 py-1.5 rounded-full transition-all ${timeRange === "30D" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                            className={`px-3 py-1.5 rounded-lg transition-all ${timeRange === "30D" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                         >
                             30 Days
                         </button>
@@ -337,7 +337,7 @@ export default function AdminPage() {
                                 <Tooltip
                                     contentStyle={{
                                         backgroundColor: 'hsl(var(--card))',
-                                        borderRadius: '1rem',
+                                        borderRadius: '0.75rem',
                                         border: '1px solid hsl(var(--border))',
                                         color: 'hsl(var(--foreground))',
                                         boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
@@ -376,7 +376,7 @@ export default function AdminPage() {
             {/* Two-Column Section: Node Telemetry & Recent Incidents */}
             <div className="grid lg:grid-cols-3 gap-6">
                 {/* Node Telemetry Card */}
-                <div className="bg-card border border-border rounded-3xl p-6 shadow-sm space-y-5">
+                <div className="bg-card border border-border/80 rounded-2xl p-6 shadow-sm space-y-5">
                     <div className="flex items-center gap-2">
                         <Server className="w-4 h-4 text-primary" />
                         <h3 className="font-bold text-base text-foreground">Cluster Diagnostics</h3>
@@ -411,7 +411,7 @@ export default function AdminPage() {
                         </div>
                     </div>
 
-                    <div className="p-3 bg-muted/40 rounded-2xl border border-border/60 flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="p-3 bg-muted/40 rounded-xl border border-border/60 flex items-center gap-2 text-xs text-muted-foreground">
                         {isNodeOnline ? (
                             <>
                                 <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
@@ -427,7 +427,7 @@ export default function AdminPage() {
                 </div>
 
                 {/* Recent Incident Feed Table */}
-                <div className="lg:col-span-2 bg-card border border-border rounded-3xl p-6 shadow-sm space-y-4">
+                <div className="lg:col-span-2 bg-card border border-border/80 rounded-2xl p-6 shadow-sm space-y-4">
                     <div className="flex items-center justify-between">
                         <h3 className="font-bold text-base text-foreground">Recent Threat Ingest Stream</h3>
                         <span className="text-xs text-muted-foreground font-mono">Live Database</span>

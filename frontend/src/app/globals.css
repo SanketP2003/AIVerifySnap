@@ -31,11 +31,11 @@
     --border: 0 0% 88%;
     --input: 0 0% 88%;
     --ring: 0 0% 7.5%;
-    --radius: 2rem;
-    /* Extreme rounding */
+    --radius: 0.75rem;
+    /* Enterprise & Workbench precision radius (12px) */
 
     --font-serif: "DM Serif Display", serif;
-    --font-sans: "Inter", sans-serif;
+    --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 
   .dark {
@@ -69,23 +69,25 @@
     letter-spacing: -0.015em;
   }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    @apply font-serif;
+  /* Modern Editorial headlines use font-serif explicitly or in marketing contexts */
+  .font-editorial {
+    font-family: var(--font-serif);
     letter-spacing: -0.03em;
   }
 }
 
-/* ─── Glass panel ─── */
+/* ─── Forensic & Enterprise Glass panel ─── */
 .glass-panel {
-  @apply bg-white/70 backdrop-blur-2xl border border-white/40 shadow-xl;
+  @apply bg-card/80 backdrop-blur-xl border border-border/70 shadow-sm;
 }
 .dark .glass-panel {
-  @apply bg-white/5 border-white/10;
+  @apply bg-card/60 backdrop-blur-xl border-border/80 shadow-md;
+}
+
+/* ─── Forensic Workbench Blueprint Pattern ─── */
+.forensic-grid {
+  background-image: radial-gradient(hsl(var(--border) / 0.7) 1px, transparent 1px);
+  background-size: 20px 20px;
 }
 
 /* ─── Ambient glow backgrounds ─── */
